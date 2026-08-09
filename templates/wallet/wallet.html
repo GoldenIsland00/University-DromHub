@@ -1,1 +1,62 @@
-
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "کیف پول" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <div class="wallet-card mb-3">
+        <div class="text-secondary">{% trans "موجودی فعلی" %}</div>
+        <div class="wallet-balance">{{ wallet.balance|floatformat:0 }} {% trans "تومان" %}</div>
+        <div class="wallet-actions">
+          <button class="btn btn-primary" onclick="openModal('chargeModal')">{% trans "شارژ حساب" %}</button>
+          <a href="{% url 'cafeteria:meals' %}" class="btn btn-outline">{% trans "سفارش غذا" %}</a>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3 class="card-title">{% trans "تاریخچه تراکنش‌ها" %}</h3></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>{% trans "تاریخ" %}</th><th>{% trans "نوع" %}</th><th>{% trans "توضیحات" %}</th><th>{% trans "مبلغ" %}</th></tr></thead>
+            <tbody>
+              {% for t in transactions %}
+              <tr>
+                <td>{{ t.created_at|date:"Y/m/d H:i" }}</td>
+                <td><span class="badge badge-{% if t.amount > 0 %}success{% else %}danger{% endif %}">{{ t.get_transaction_type_display }}</span></td>
+                <td>{{ t.description }}</td>
+                <td class="{% if t.amount > 0 %}text-success{% else %}text-danger{% endif %}">{{ t.amount|floatformat:0 }}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-muted" style="text-align:center;">{% trans "تراکنشی وجود ندارد" %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="chargeModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>{% trans "شارژ حساب" %}</h3>
+      <button class="icon-btn" onclick="closeModal('chargeModal')">✕</button>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">{{ form.amount.label }}</label>
+          {{ form.amount }}
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-ghost" onclick="closeModal('chargeModal')">{% trans "انصراف" %}</button>
+        <button type="submit" class="btn btn-primary">{% trans "پرداخت (دمو)" %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
