@@ -1,1 +1,49 @@
-
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "سفارش غذای هفتگی" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <div class="flex-between mb-3">
+        <p class="text-secondary">{% trans "موجودی کیف پول" %}: <strong class="text-accent">{{ balance|floatformat:0 }} {% trans "تومان" %}</strong></p>
+      </div>
+      <form method="post">
+        {% csrf_token %}
+        <div class="meal-week">
+          {% for menu in menus %}
+          <div class="day-card">
+            <div class="day-name">{{ menu.get_weekday_display }}</div>
+            {% with order=existing_orders|default_if_none:dict %}
+            {% if menu.pk in existing_orders %}
+              <div class="meal-option selected" style="pointer-events:none;opacity:0.9;">
+                <div class="meal-name">✓ {{ existing_orders|get_item:menu.pk }}</div>
+              </div>
+            {% else %}
+              {% for item in menu.options.all %}
+              <label class="meal-option" style="display:block;cursor:pointer;">
+                <input type="radio" name="menu_{{ menu.pk }}" value="{{ item.pk }}" style="display:none;"
+                  onchange="this.closest('.day-card').querySelectorAll('.meal-option').forEach(e=>e.classList.remove('selected'));this.closest('.meal-option').classList.add('selected');">
+                <div class="meal-name">{{ item.name_fa }}</div>
+                <div class="meal-price">{{ item.price|floatformat:0 }} ت</div>
+              </label>
+              {% endfor %}
+            {% endif %}
+            {% endwith %}
+          </div>
+          {% empty %}
+          <p class="text-muted">{% trans "منوی این هفته هنوز تعریف نشده است. از پنل ادمین اضافه کنید." %}</p>
+          {% endfor %}
+        </div>
+        {% if menus %}
+        <div class="card mt-3">
+          <button type="submit" class="btn btn-primary btn-lg">{% trans "ثبت سفارش هفته" %}</button>
+        </div>
+        {% endif %}
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
