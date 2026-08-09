@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "پروفایل" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <div class="grid-2">
+        <div class="card">
+          <div style="text-align:center;margin-bottom:1.5rem;">
+            <div class="user-avatar" style="width:80px;height:80px;font-size:1.75rem;margin:0 auto 1rem;">{{ user.get_initials }}</div>
+            <h2>{{ user.display_name }}</h2>
+            <p class="text-secondary">{{ user.get_role_display }}{% if user.gender %} - {{ user.get_gender_display }}{% endif %}</p>
+          </div>
+          <div style="display:grid;gap:1rem;">
+            <div class="flex-between"><span class="text-muted">{% trans "شماره دانشجویی" %}</span><strong>{{ user.student_id|default:"—" }}</strong></div>
+            <div class="flex-between"><span class="text-muted">{% trans "ایمیل" %}</span><strong>{{ user.email }}</strong></div>
+            <div class="flex-between"><span class="text-muted">{% trans "موبایل" %}</span><strong>{{ user.phone|default:"—" }}</strong></div>
+            <div class="flex-between"><span class="text-muted">{% trans "موجودی" %}</span><strong class="text-accent">{{ user_balance|floatformat:0 }} {% trans "تومان" %}</strong></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">{% trans "ویرایش اطلاعات" %}</h3></div>
+          <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {% for field in form %}
+            <div class="form-group">
+              <label class="form-label">{{ field.label }}</label>
+              {{ field }}
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary">{% trans "ذخیره" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

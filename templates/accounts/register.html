@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "ثبت‌نام" %}{% endblock %}
+{% block body %}
+<div class="auth-page">
+  <div class="auth-card animate-fade" style="max-width:480px;">
+    <div class="auth-logo">
+      <div class="logo-icon">خ</div>
+      <h2>{% trans "ایجاد حساب" %}</h2>
+      <p class="auth-subtitle">{% trans "ثبت‌نام در سامانه خوابگاه" %}</p>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>
+        {{ field }}
+        {% if field.errors %}<div class="form-error">{{ field.errors }}</div>{% endif %}
+      </div>
+      {% endfor %}
+      <button type="submit" class="btn btn-primary btn-block btn-lg">{% trans "ثبت‌نام" %}</button>
+    </form>
+    <div class="auth-footer">
+      <span>{% trans "قبلاً ثبت‌نام کرده‌اید؟" %}</span>
+      <a href="{% url 'accounts:login' %}">{% trans "ورود" %}</a>
+    </div>
+  </div>
+</div>
+{% endblock %}
