@@ -1,1 +1,40 @@
-
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "تیکت‌ها" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <div class="flex-between mb-3">
+        <div class="flex gap-2">
+          <a href="?status=" class="btn btn-outline btn-sm">{% trans "همه" %}</a>
+          <a href="?status=open" class="btn btn-ghost btn-sm">{% trans "باز" %}</a>
+          <a href="?status=in_progress" class="btn btn-ghost btn-sm">{% trans "در حال بررسی" %}</a>
+          <a href="?status=resolved" class="btn btn-ghost btn-sm">{% trans "حل شده" %}</a>
+        </div>
+        <a href="{% url 'tickets:create' %}" class="btn btn-primary btn-sm">+ {% trans "ثبت تیکت جدید" %}</a>
+      </div>
+      <div class="ticket-list">
+        {% for t in tickets %}
+        <a href="{% url 'tickets:detail' t.pk %}" class="ticket-item">
+          <div class="ticket-status {{ t.status }}"></div>
+          <div class="ticket-body">
+            <div class="ticket-title">{{ t.subject }}</div>
+            <div class="ticket-meta">
+              <span class="badge badge-{% if t.status == 'open' %}warning{% elif t.status == 'in_progress' %}info{% else %}success{% endif %}">{{ t.get_status_display }}</span>
+              <span>{{ t.created_at|date:"Y/m/d" }}</span>
+              <span>{{ t.get_category_display }}</span>
+              <span class="badge badge-muted">{{ t.get_priority_display }}</span>
+            </div>
+          </div>
+        </a>
+        {% empty %}
+        <div class="card"><div class="empty-state"><p>{% trans "هنوز تیکتی ثبت نکرده‌اید" %}</p></div></div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

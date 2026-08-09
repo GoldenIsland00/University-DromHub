@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "جزئیات تیکت" %} #{{ ticket.pk }}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <div class="card mb-3">
+        <div class="flex-between mb-2">
+          <h2>{{ ticket.subject }}</h2>
+          <span class="badge badge-{% if ticket.status == 'open' %}warning{% elif ticket.status == 'in_progress' %}info{% else %}success{% endif %}">{{ ticket.get_status_display }}</span>
+        </div>
+        <div class="ticket-meta mb-2">
+          <span>{% trans "دسته" %}: {{ ticket.get_category_display }}</span>
+          <span>{% trans "اولویت" %}: {{ ticket.get_priority_display }}</span>
+          <span>{{ ticket.created_at|date:"Y/m/d H:i" }}</span>
+          {% if ticket.room %}<span>{% trans "اتاق" %}: {{ ticket.room.number }}</span>{% endif %}
+        </div>
+        <p class="text-secondary">{{ ticket.description }}</p>
+      </div>
+      <div class="card">
+        <h3 class="mb-2">{% trans "گفتگو" %}</h3>
+        {% for reply in replies %}
+        <div class="reply-item {% if reply.is_staff_reply %}admin{% else %}user{% endif %}">
+          <div class="flex-between mb-1">
+            <strong>{{ reply.user.display_name }}{% if reply.is_staff_reply %} ({% trans "مدیر" %}){% endif %}</strong>
+            <span class="text-muted" style="font-size:0.8rem;">{{ reply.created_at|date:"Y/m/d H:i" }}</span>
+          </div>
+          <p>{{ reply.message }}</p>
+        </div>
+        {% endfor %}
+        <div class="reply-box mt-2">
+          <form method="post">
+            {% csrf_token %}
+            {{ form.message }}
+            <button type="submit" class="btn btn-primary btn-sm mt-2">{% trans "پاسخ" %}</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
