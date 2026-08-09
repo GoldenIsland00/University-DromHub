@@ -1,1 +1,36 @@
+{% load static i18n %}
+<!DOCTYPE html>
+<html lang="{{ LANGUAGE_CODE }}" dir="{% if LANGUAGE_CODE == 'fa' %}rtl{% else %}ltr{% endif %}" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{% trans "سامانه خوابگاه و سلف" %}{% endblock %}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Vazirmatn:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'css/style.css' %}">
+  {% block extra_css %}{% endblock %}
+</head>
+<body class="{% if LANGUAGE_CODE == 'fa' %}rtl{% endif %}">
+  {% if messages %}
+  <div id="messages" style="position:fixed;top:20px;{% if LANGUAGE_CODE == 'fa' %}left{% else %}right{% endif %}:20px;z-index:9999;max-width:360px;">
+    {% for message in messages %}
+    <div class="card" style="margin-bottom:8px;border-color:var(--{{ message.tags }});padding:12px 16px;">
+      {{ message }}
+      <button onclick="this.parentElement.remove()" style="float:left;cursor:pointer;opacity:0.6;">✕</button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
 
+  {% block body %}{% endblock %}
+
+  <script src="{% static 'js/main.js' %}"></script>
+  <script>
+    // Persist theme from localStorage
+    (function(){
+      const t = localStorage.getItem('dorm_theme') || 'dark';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
+  {% block extra_js %}{% endblock %}
+</body>
+</html>
