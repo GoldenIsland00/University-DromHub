@@ -1,1 +1,55 @@
-
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "اتاق من" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      {% if room %}
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">{% trans "اطلاعات اتاق" %}</h3>
+            <span class="badge badge-accent">{{ room.building.get_section_display }}</span>
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.25rem;">
+            <div><div class="text-muted" style="font-size:0.85rem;">{% trans "شماره اتاق" %}</div><div style="font-size:1.5rem;font-weight:700;">{{ room.number }}</div></div>
+            <div><div class="text-muted" style="font-size:0.85rem;">{% trans "ساختمان" %}</div><div style="font-size:1.25rem;font-weight:600;">{{ room.building.name }}</div></div>
+            <div><div class="text-muted" style="font-size:0.85rem;">{% trans "طبقه" %}</div><div style="font-size:1.25rem;font-weight:600;">{{ room.floor }}</div></div>
+            <div><div class="text-muted" style="font-size:0.85rem;">{% trans "ظرفیت" %}</div><div style="font-size:1.25rem;font-weight:600;">{{ room.capacity }}</div></div>
+            <div><div class="text-muted" style="font-size:0.85rem;">{% trans "تخت شما" %}</div><div style="font-size:1.5rem;font-weight:700;color:var(--accent);">{% if bed %}{{ bed.number }}{% endif %}</div></div>
+            <div><div class="text-muted" style="font-size:0.85rem;">{% trans "وضعیت" %}</div><div><span class="badge badge-success">{% trans "فعال" %}</span></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header"><h3 class="card-title">{% trans "مشکل در اتاق؟" %}</h3></div>
+          <p class="text-secondary mb-2">{% trans "اگر مشکلی در اتاق دارید، تیکت ثبت کنید." %}</p>
+          <a href="{% url 'tickets:create' %}" class="btn btn-primary">+ {% trans "ثبت تیکت جدید" %}</a>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-header"><h3 class="card-title">{% trans "هم‌اتاقی‌ها" %}</h3></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>{% trans "نام" %}</th><th>{% trans "شماره دانشجویی" %}</th><th>{% trans "شماره تخت" %}</th></tr></thead>
+            <tbody>
+              {% for b in roommates %}
+              <tr>
+                <td>{% if b.occupant %}{{ b.occupant.display_name }}{% if b.occupant == user %} (شما){% endif %}{% else %}—{% endif %}</td>
+                <td>{% if b.occupant %}{{ b.occupant.student_id }}{% else %}—{% endif %}</td>
+                <td><span class="bed-badge">{% trans "تخت" %} {{ b.number }}</span></td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
+      {% else %}
+      <div class="card"><div class="empty-state"><p>{% trans "هنوز اتاقی به شما اختصاص داده نشده است." %}</p></div></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}
