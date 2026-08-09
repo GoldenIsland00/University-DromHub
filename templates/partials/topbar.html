@@ -1,1 +1,17 @@
-
+{% load i18n %}
+<header class="topbar">
+  <div class="topbar-left">
+    <button class="icon-btn mobile-menu-btn" id="mobileMenuBtn">☰</button>
+    <h1 class="page-title">{% block page_title %}{% endblock %}</h1>
+  </div>
+  <div class="topbar-right">
+    <button class="theme-toggle" id="themeToggle"><span>☀️</span></button>
+    <form action="{% url 'set_language' %}" method="post" style="display:inline;">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" name="language" value="{% if LANGUAGE_CODE == 'fa' %}en{% else %}fa{% endif %}" class="lang-toggle">
+        <span>{% if LANGUAGE_CODE == 'fa' %}EN{% else %}FA{% endif %}</span>
+      </button>
+    </form>
+  </div>
+</header>
