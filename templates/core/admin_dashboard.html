@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "پنل مدیریت" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <div class="stats-grid">
+        <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-content"><div class="stat-label">{% trans "کل کاربران" %}</div><div class="stat-value">{{ total_users }}</div></div></div>
+        <div class="stat-card"><div class="stat-icon green">🛏️</div><div class="stat-content"><div class="stat-label">{% trans "کل اتاق‌ها" %}</div><div class="stat-value">{{ total_rooms }}</div><div class="stat-change text-muted">{% trans "برادران" %}: {{ male_rooms }} | {% trans "خواهران" %}: {{ female_rooms }}</div></div></div>
+        <div class="stat-card"><div class="stat-icon orange">🎫</div><div class="stat-content"><div class="stat-label">{% trans "تیکت‌های باز" %}</div><div class="stat-value">{{ open_tickets }}</div></div></div>
+        <div class="stat-card"><div class="stat-icon purple">🍽️</div><div class="stat-content"><div class="stat-label">{% trans "سفارش‌های امروز" %}</div><div class="stat-value">{{ today_orders }}</div></div></div>
+      </div>
+      <div class="card">
+        <div class="card-header">
+          <h3 class="card-title">{% trans "تیکت‌های اخیر نیازمند پاسخ" %}</h3>
+          <a href="{% url 'tickets:admin_list' %}" class="btn btn-ghost btn-sm">{% trans "همه" %}</a>
+        </div>
+        <div class="ticket-list">
+          {% for t in recent_tickets %}
+          <a href="{% url 'tickets:detail' t.pk %}" class="ticket-item">
+            <div class="ticket-status open"></div>
+            <div class="ticket-body">
+              <div class="ticket-title">{{ t.subject }}</div>
+              <div class="ticket-meta"><span>{{ t.user.display_name }}</span> · <span>{{ t.get_priority_display }}</span></div>
+            </div>
+          </a>
+          {% empty %}
+          <p class="text-muted">{% trans "تیکت بازی وجود ندارد" %}</p>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

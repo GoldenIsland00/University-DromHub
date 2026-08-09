@@ -1,1 +1,58 @@
-
+{% extends "base.html" %}
+{% load i18n static %}
+{% block title %}{% trans "سامانه خوابگاه و سلف دانشگاه" %}{% endblock %}
+{% block body %}
+<header class="landing-header">
+  <div class="flex" style="align-items:center;gap:12px;">
+    <div class="sidebar-logo">خ</div>
+    <strong>{% trans "سامانه خوابگاه و سلف" %}</strong>
+  </div>
+  <nav class="landing-nav">
+    <a href="{% url 'home' %}" class="active">{% trans "خانه" %}</a>
+    {% if user.is_authenticated %}
+      <a href="{% url 'dashboard' %}">{% trans "داشبورد" %}</a>
+      <a href="{% url 'accounts:logout' %}">{% trans "خروج" %}</a>
+    {% else %}
+      <a href="{% url 'accounts:login' %}">{% trans "ورود" %}</a>
+      <a href="{% url 'accounts:register' %}">{% trans "ثبت‌نام" %}</a>
+    {% endif %}
+  </nav>
+  <div class="flex gap-1">
+    <button class="theme-toggle" id="themeToggle"><span>☀️</span></button>
+    <form action="{% url 'set_language' %}" method="post">
+      {% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.path }}">
+      <button type="submit" name="language" value="{% if LANGUAGE_CODE == 'fa' %}en{% else %}fa{% endif %}" class="lang-toggle">
+        <span>{% if LANGUAGE_CODE == 'fa' %}EN{% else %}FA{% endif %}</span>
+      </button>
+    </form>
+  </div>
+</header>
+<section class="landing-hero">
+  <div class="matrix-bg"></div>
+  <div class="hero-content">
+    <h1 class="hero-title">
+      <span>{% trans "مدیریت هوشمند" %}</span><br>
+      <span class="text-accent">{% trans "خوابگاه و سلف" %}</span>
+    </h1>
+    <p class="hero-desc">{% trans "سیستم جامع مدیریت خوابگاه (خواهران و برادران)، تیکت مشکلات اتاق، سفارش غذای هفتگی و مدیریت موجودی دانشجویان." %}</p>
+    <div class="flex gap-2" style="flex-wrap:wrap;">
+      {% if user.is_authenticated %}
+        <a href="{% url 'dashboard' %}" class="btn btn-primary btn-lg">{% trans "ورود به داشبورد" %}</a>
+      {% else %}
+        <a href="{% url 'accounts:login' %}" class="btn btn-primary btn-lg">{% trans "ورود به سامانه" %}</a>
+        <a href="{% url 'accounts:register' %}" class="btn btn-outline btn-lg">{% trans "ثبت‌نام" %}</a>
+      {% endif %}
+    </div>
+    <div class="hero-stats">
+      <div class="stat-item"><div class="stat-value">{{ stats.students }}</div><div class="stat-label">{% trans "دانشجو" %}</div></div>
+      <div class="stat-item"><div class="stat-value">{{ stats.rooms }}</div><div class="stat-label">{% trans "اتاق" %}</div></div>
+      <div class="stat-item"><div class="stat-value">{{ stats.open_tickets }}</div><div class="stat-label">{% trans "تیکت فعال" %}</div></div>
+      <div class="stat-item"><div class="stat-value">{{ stats.today_orders }}</div><div class="stat-label">{% trans "سفارش امروز" %}</div></div>
+    </div>
+  </div>
+</section>
+<footer style="text-align:center;padding:2rem;border-top:1px solid var(--border-color);color:var(--text-muted);">
+  © 2026 {% trans "سامانه خوابگاه و سلف دانشگاه" %}
+</footer>
+{% endblock %}

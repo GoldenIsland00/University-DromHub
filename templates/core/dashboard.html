@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "داشبورد" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" with page_title="داشبورد" %}
+    <div class="content-area">
+      <div class="mb-3">
+        <h2>{% trans "سلام" %}، {{ user.display_name }} 👋</h2>
+        <p class="text-secondary">{% trans "خوش آمدید به پنل شخصی خود" %}</p>
+      </div>
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon orange">💰</div>
+          <div class="stat-content">
+            <div class="stat-label">{% trans "موجودی کیف پول" %}</div>
+            <div class="stat-value">{{ user_balance|floatformat:0 }} <small>{% trans "تومان" %}</small></div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon blue">🎫</div>
+          <div class="stat-content">
+            <div class="stat-label">{% trans "تیکت‌های باز" %}</div>
+            <div class="stat-value">{{ open_tickets_count }}</div>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon green">🛏️</div>
+          <div class="stat-content">
+            <div class="stat-label">{% trans "شماره اتاق" %}</div>
+            <div class="stat-value">{% if user_room %}{{ user_room.number }}{% else %}—{% endif %}</div>
+            {% if user_bed %}<div class="stat-change text-muted">{% trans "تخت" %} {{ user_bed.number }}</div>{% endif %}
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon purple">🍽️</div>
+          <div class="stat-content">
+            <div class="stat-label">{% trans "غذای امروز" %}</div>
+            <div class="stat-value" style="font-size:1.1rem;">
+              {% if today_meal %}{{ today_meal.meal_item.name_fa }}{% else %}—{% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">{% trans "تیکت‌های اخیر" %}</h3>
+            <a href="{% url 'tickets:list' %}" class="btn btn-ghost btn-sm">{% trans "مشاهده همه" %}</a>
+          </div>
+          <div class="ticket-list">
+            {% for t in recent_tickets %}
+            <a href="{% url 'tickets:detail' t.pk %}" class="ticket-item">
+              <div class="ticket-status {{ t.status }}"></div>
+              <div class="ticket-body">
+                <div class="ticket-title">{{ t.subject }}</div>
+                <div class="ticket-meta">
+                  <span class="badge badge-{% if t.status == 'open' %}warning{% elif t.status == 'in_progress' %}info{% else %}success{% endif %}">{{ t.get_status_display }}</span>
+                  <span>{{ t.created_at|date:"Y/m/d" }}</span>
+                </div>
+              </div>
+            </a>
+            {% empty %}
+            <p class="text-muted">{% trans "تیکتی وجود ندارد" %}</p>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">{% trans "هم‌اتاقی‌ها" %}</h3>
+            <a href="{% url 'dormitory:my_room' %}" class="btn btn-ghost btn-sm">{% trans "جزئیات اتاق" %}</a>
+          </div>
+          <div class="roommate-list">
+            {% for bed in roommates %}
+            <div class="roommate-item">
+              <div class="user-avatar" style="width:36px;height:36px;font-size:0.8rem;">
+                {% if bed.occupant %}{{ bed.occupant.get_initials }}{% else %}—{% endif %}
+              </div>
+              <div style="flex:1;">
+                <div style="font-weight:600;">
+                  {% if bed.occupant %}{{ bed.occupant.display_name }}{% if bed.occupant == user %} (شما){% endif %}{% else %}{% trans "خالی" %}{% endif %}
+                </div>
+                <div class="text-muted" style="font-size:0.85rem;">{% trans "تخت" %} {{ bed.number }}</div>
+              </div>
+              <span class="bed-badge">Bed {{ bed.number }}</span>
+            </div>
+            {% empty %}
+            <p class="text-muted">{% trans "اتاق اختصاص داده نشده" %}</p>
+            {% endfor %}
+          </div>
+        </div>
+      </div>
+      <div class="card mt-3">
+        <div class="card-header"><h3 class="card-title">{% trans "دسترسی سریع" %}</h3></div>
+        <div class="flex gap-2" style="flex-wrap:wrap;">
+          <a href="{% url 'tickets:create' %}" class="btn btn-primary">+ {% trans "ثبت تیکت جدید" %}</a>
+          <a href="{% url 'cafeteria:meals' %}" class="btn btn-outline">{% trans "سفارش غذای هفته" %}</a>
+          <a href="{% url 'wallet:wallet' %}" class="btn btn-outline">{% trans "شارژ کیف پول" %}</a>
+          <a href="{% url 'dormitory:my_room' %}" class="btn btn-outline">{% trans "مشاهده اتاق" %}</a>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
