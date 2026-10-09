@@ -5,7 +5,7 @@
 <div class="app-layout">
   {% include "partials/sidebar.html" %}
   <div class="main-content">
-    {% include "partials/topbar.html" %}
+    {% include "partials/topbar.html" with page_title=ticket.subject %}
     <div class="content-area">
       <div class="card mb-3">
         <div class="flex-between mb-2">
@@ -19,13 +19,33 @@
           {% if ticket.room %}<span>{% trans "اتاق" %}: {{ ticket.room.number }}</span>{% endif %}
         </div>
         <p class="text-secondary">{{ ticket.description }}</p>
+        {% if ticket.assigned_to %}<p class="mt-2"><span class="badge badge-info">{% trans "ارجاع به" %}: {{ ticket.assigned_to.display_name }}</span></p>{% endif %}
       </div>
+      {% if is_staff_view %}
+      <div class="card mb-3">
+        <h3 class="mb-2">{% trans "مدیریت تیکت" %}</h3>
+        <div class="flex gap-2" style="flex-wrap:wrap;align-items:center;">
+          <form method="post" class="flex gap-2" style="align-items:center;">{% csrf_token %}
+            <input type="hidden" name="action" value="status">
+            <select name="status" class="form-control form-select" style="width:auto;">
+              {% for value, label in statuses %}<option value="{{ value }}" {% if value == ticket.status %}selected{% endif %}>{{ label }}</option>{% endfor %}
+            </select>
+            <button class="btn btn-primary btn-sm">{% trans "تغییر وضعیت" %}</button>
+          </form>
+          {% if ticket.assigned_to_id != user.pk %}
+          <form method="post">{% csrf_token %}<input type="hidden" name="action" value="assign_me"><button class="btn btn-outline btn-sm">{% trans "ارجاع به من" %}</button></form>
+          {% else %}
+          <form method="post">{% csrf_token %}<input type="hidden" name="action" value="unassign"><button class="btn btn-ghost btn-sm">{% trans "برداشتن ارجاع" %}</button></form>
+          {% endif %}
+        </div>
+      </div>
+      {% endif %}
       <div class="card">
         <h3 class="mb-2">{% trans "گفتگو" %}</h3>
         {% for reply in replies %}
         <div class="reply-item {% if reply.is_staff_reply %}admin{% else %}user{% endif %}">
           <div class="flex-between mb-1">
-            <strong>{{ reply.user.display_name }}{% if reply.is_staff_reply %} ({% trans "مدیر" %}){% endif %}</strong>
+            <strong>{{ reply.user.display_name }}{% if reply.is_staff_reply %} ({% trans "پشتیبانی" %}){% endif %}</strong>
             <span class="text-muted" style="font-size:0.8rem;">{{ reply.created_at|date:"Y/m/d H:i" }}</span>
           </div>
           <p>{{ reply.message }}</p>
