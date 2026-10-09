@@ -1,5 +1,5 @@
 from django.contrib import admin
-from .models import Building, Room, Bed
+from .models import AccessLog, Building, Room, Bed
 
 
 class BedInline(admin.TabularInline):
@@ -36,3 +36,21 @@ class BedAdmin(admin.ModelAdmin):
     list_filter = ('room__building__section', 'room__building')
     search_fields = ('room__number', 'occupant__username', 'occupant__first_name')
     autocomplete_fields = ['occupant', 'room']
+
+
+@admin.register(AccessLog)
+class AccessLogAdmin(admin.ModelAdmin):
+    list_display = ('user', 'direction', 'recorded_by', 'created_at')
+    list_filter = ('direction', 'created_at')
+    search_fields = ('user__username', 'user__first_name', 'user__last_name', 'user__student_id')
+    raw_id_fields = ('user', 'recorded_by')
+
+
+from .models import LeaveRequest
+
+
+@admin.register(LeaveRequest)
+class LeaveRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'start_at', 'end_at', 'status', 'created_at')
+    list_filter = ('status',)
+    search_fields = ('user__username', 'user__student_id', 'reason')

@@ -84,3 +84,71 @@ class Bed(models.Model):
     def __str__(self):
         status = self.occupant.display_name if self.occupant else 'خالی'
         return f"اتاق {self.room.number} - تخت {self.number} ({status})"
+
+
+class AccessLog(models.Model):
+    """لاگ ورود و خروج دانشجو (ثبت توسط گارد)"""
+    class Direction(models.TextChoices):
+        IN = 'in', _('ورود')
+        OUT = 'out', _('خروج')
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.CASCADE,
+        related_name='access_logs',
+        verbose_name=_('دانشجو')
+    )
+    direction = models.CharField(_('نوع'), max_length=3, choices=Direction.choices)
+    note = models.CharField(_('توضیحات'), max_length=255, blank=True)
+    recorded_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='recorded_access_logs',
+        verbose_name=_('ثبت‌کننده')
+    )
+    created_at = models.DateTimeField(_('زمان'), auto_now_add=True)
+
+    class Meta:
+        verbose_name = _('تردد')
+        verbose_name_plural = _('تردد‌ها')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.user} - {self.get_direction_display()} - {self.created_at:%Y/%m/%d %H:%M}"
+
+
+
+class LeaveRequest(models.Model):
+    """درخواست مرخصی / خروج شبانه دانشجو."""
+    class Status(models.TextChoices):
+        PENDING = 'pending', _('در انتظار')
+        APPROVED = 'approved', _('تأیید شده')
+        REJECTED = 'rejected', _('رد شده')
+        CANCELLED = 'cancelled', _('لغو شده')
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='leave_requests', verbose_name=_('دانشجو'),
+    )
+    start_at = models.DateTimeField(_('شروع خروج'))
+    end_at = models.DateTimeField(_('زمان بازگشت پیش‌بینی‌شده'))
+    reason = models.TextField(_('دلیل'), max_length=500)
+    destination = models.CharField(_('مقصد'), max_length=200, blank=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    reviewed_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.SET_NULL,
+        null=True, blank=True, related_name='reviewed_leaves', verbose_name=_('بررسی‌کننده'),
+    )
+    review_note = models.CharField(_('یادداشت بررسی'), max_length=255, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta:
+        verbose_name = _('درخواست مرخصی')
+        verbose_name_plural = _('درخواست‌های مرخصی')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} — {self.get_status_display()}'
