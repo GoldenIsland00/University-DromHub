@@ -1,43 +1,83 @@
 {% load i18n %}
+{% with url_name=request.resolver_match.url_name %}
 <aside class="sidebar">
   <div class="sidebar-header">
     <div class="sidebar-logo">خ</div>
     <div class="sidebar-brand">{% trans "سامانه خوابگاه" %}</div>
   </div>
   <nav class="sidebar-nav">
+
+    {% if user.is_student %}
     <div class="nav-section">
       <div class="nav-section-title">{% trans "منو" %}</div>
-      <a href="{% url 'dashboard' %}" class="nav-item {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
-        <span>📊</span> <span>{% trans "داشبورد" %}</span>
-      </a>
-      <a href="{% url 'accounts:profile' %}" class="nav-item">
-        <span>👤</span> <span>{% trans "پروفایل" %}</span>
-      </a>
-      <a href="{% url 'dormitory:my_room' %}" class="nav-item">
-        <span>🛏️</span> <span>{% trans "اتاق من" %}</span>
-      </a>
-      <a href="{% url 'tickets:list' %}" class="nav-item">
+      <a href="{% url 'dashboard' %}" class="nav-item {% if url_name == 'dashboard' %}active{% endif %}"><span>📊</span> <span>{% trans "داشبورد" %}</span></a>
+      <a href="{% url 'dormitory:my_room' %}" class="nav-item {% if url_name == 'my_room' %}active{% endif %}"><span>🛏️</span> <span>{% trans "اتاق من" %}</span></a>
+      <a href="{% url 'dormitory:leave_list' %}" class="nav-item {% if url_name == 'leave_list' or url_name == 'leave_create' %}active{% endif %}"><span>🚶</span> <span>{% trans "مرخصی" %}</span></a>
+      <a href="{% url 'tickets:list' %}" class="nav-item {% if url_name == 'list' %}active{% endif %}">
         <span>🎫</span> <span>{% trans "تیکت‌ها" %}</span>
         {% if open_tickets_count %}<span class="badge badge-warning">{{ open_tickets_count }}</span>{% endif %}
       </a>
-      <a href="{% url 'cafeteria:meals' %}" class="nav-item">
-        <span>🍽️</span> <span>{% trans "سفارش غذا" %}</span>
-      </a>
-      <a href="{% url 'wallet:wallet' %}" class="nav-item">
-        <span>💰</span> <span>{% trans "کیف پول" %}</span>
-      </a>
-    </div>
-    {% if user.is_admin_user or user.is_staff %}
-    <div class="nav-section">
-      <div class="nav-section-title">{% trans "مدیریت" %}</div>
-      <a href="{% url 'admin_dashboard' %}" class="nav-item"><span>🛠️</span> <span>{% trans "پنل مدیریت" %}</span></a>
-      <a href="{% url 'tickets:admin_list' %}" class="nav-item"><span>🎫</span> <span>{% trans "مدیریت تیکت‌ها" %}</span></a>
-      <a href="/admin/" class="nav-item" target="_blank"><span>⚙️</span> <span>Django Admin</span></a>
+      <a href="{% url 'cafeteria:meals' %}" class="nav-item {% if url_name == 'meals' %}active{% endif %}"><span>🍽️</span> <span>{% trans "سفارش غذا" %}</span></a>
+      <a href="{% url 'wallet:wallet' %}" class="nav-item {% if url_name == 'wallet' or url_name == 'pay_mock' %}active{% endif %}"><span>💰</span> <span>{% trans "کیف پول" %}</span></a>
     </div>
     {% endif %}
+
+    {% if user.is_cook or user.is_manager_level %}
+    <div class="nav-section">
+      <div class="nav-section-title">{% trans "پنل آشپز" %}</div>
+      <a href="{% url 'panels:cook_dashboard' %}" class="nav-item {% if url_name == 'cook_dashboard' %}active{% endif %}"><span>👨‍🍳</span> <span>{% trans "داشبورد آشپزخانه" %}</span></a>
+      <a href="{% url 'panels:cook_orders' %}" class="nav-item {% if url_name == 'cook_orders' %}active{% endif %}"><span>🧾</span> <span>{% trans "سفارش‌ها و تحویل" %}</span></a>
+      <a href="{% url 'panels:cook_serve_code' %}" class="nav-item {% if url_name == 'cook_serve_code' %}active{% endif %}"><span>🔢</span> <span>{% trans "ثبت با کد فیش" %}</span></a>
+      <a href="{% url 'panels:cook_menu' %}" class="nav-item {% if url_name == 'cook_menu' %}active{% endif %}"><span>📅</span> <span>{% trans "منوی هفتگی" %}</span></a>
+      <a href="{% url 'panels:cook_items' %}" class="nav-item {% if url_name == 'cook_items' %}active{% endif %}"><span>🍲</span> <span>{% trans "غذاها و قیمت‌ها" %}</span></a>
+    </div>
+    {% endif %}
+
+    {% if user.is_maintenance or user.is_manager_level %}
+    <div class="nav-section">
+      <div class="nav-section-title">{% trans "پنل تاسیسات" %}</div>
+      <a href="{% url 'panels:maintenance_dashboard' %}" class="nav-item {% if url_name == 'maintenance_dashboard' %}active{% endif %}"><span>🔧</span> <span>{% trans "داشبورد تاسیسات" %}</span></a>
+      <a href="{% url 'panels:maintenance_tickets' %}" class="nav-item {% if url_name == 'maintenance_tickets' %}active{% endif %}">
+        <span>🎫</span> <span>{% trans "تیکت‌های خرابی" %}</span>
+        {% if staff_open_tickets_count %}<span class="badge badge-warning">{{ staff_open_tickets_count }}</span>{% endif %}
+      </a>
+    </div>
+    {% endif %}
+
+    {% if user.is_guard or user.is_manager_level %}
+    <div class="nav-section">
+      <div class="nav-section-title">{% trans "پنل گارد" %}</div>
+      <a href="{% url 'panels:guard_dashboard' %}" class="nav-item {% if url_name == 'guard_dashboard' %}active{% endif %}"><span>🛡️</span> <span>{% trans "داشبورد حراست" %}</span></a>
+      <a href="{% url 'panels:guard_gate' %}" class="nav-item {% if url_name == 'guard_gate' %}active{% endif %}"><span>🚪</span> <span>{% trans "ثبت ورود / خروج" %}</span></a>
+      <a href="{% url 'panels:guard_outside' %}" class="nav-item {% if url_name == 'guard_outside' %}active{% endif %}"><span>🚶</span> <span>{% trans "افراد بیرون از خوابگاه" %}</span></a>
+      <a href="{% url 'panels:guard_logs' %}" class="nav-item {% if url_name == 'guard_logs' %}active{% endif %}"><span>📋</span> <span>{% trans "گزارش تردد" %}</span></a>
+    </div>
+    {% endif %}
+
+    {% if user.is_manager_level %}
+    <div class="nav-section">
+      <div class="nav-section-title">{% trans "مدیریت" %}</div>
+      <a href="{% url 'panels:manager_dashboard' %}" class="nav-item {% if url_name == 'manager_dashboard' %}active{% endif %}"><span>🛠️</span> <span>{% trans "پنل مدیریت" %}</span></a>
+      <a href="{% url 'panels:manager_users' %}" class="nav-item {% if url_name == 'manager_users' or url_name == 'manager_user_edit' %}active{% endif %}"><span>👥</span> <span>{% trans "کاربران و نقش‌ها" %}</span></a>
+      <a href="{% url 'panels:manager_user_create' %}" class="nav-item {% if url_name == 'manager_user_create' %}active{% endif %}"><span>➕</span> <span>{% trans "افزودن کاربر" %}</span></a>
+      <a href="{% url 'panels:manager_students_import' %}" class="nav-item {% if url_name == 'manager_students_import' %}active{% endif %}"><span>📥</span> <span>{% trans "وارد کردن از اکسل" %}</span></a>
+      <a href="{% url 'panels:manager_rooms' %}" class="nav-item {% if url_name == 'manager_rooms' or url_name == 'manager_room_assign' %}active{% endif %}"><span>🛏️</span> <span>{% trans "اتاق و تخت" %}</span></a>
+      <a href="{% url 'panels:manager_leaves' %}" class="nav-item {% if url_name == 'manager_leaves' %}active{% endif %}"><span>🚶</span> <span>{% trans "مرخصی‌ها" %}</span></a>
+      <a href="{% url 'panels:manager_reports' %}" class="nav-item {% if url_name == 'manager_reports' %}active{% endif %}"><span>📊</span> <span>{% trans "گزارش‌ها" %}</span></a>
+      <a href="{% url 'panels:manager_settings' %}" class="nav-item {% if url_name == 'manager_settings' %}active{% endif %}"><span>⚙️</span> <span>{% trans "تنظیمات سیستم" %}</span></a>
+      <a href="{% url 'panels:manager_backup' %}" class="nav-item {% if url_name == 'manager_backup' %}active{% endif %}"><span>💾</span> <span>{% trans "بک‌آپ و بازگردانی" %}</span></a>
+      {% if user.is_superuser %}<a href="/admin/" class="nav-item" target="_blank"><span>⚙️</span> <span>Django Admin</span></a>{% endif %}
+    </div>
+    {% endif %}
+
     <div class="nav-section">
       <div class="nav-section-title">{% trans "سایر" %}</div>
-      <a href="{% url 'accounts:settings' %}" class="nav-item"><span>⚙️</span> <span>{% trans "تنظیمات" %}</span></a>
+      <a href="{% url 'notifications:list' %}" class="nav-item {% if url_name == 'list' and 'notifications' in request.path %}active{% endif %}">
+        <span>🔔</span> <span>{% trans "اعلان‌ها" %}</span>
+        {% if unread_notifications %}<span class="badge badge-warning">{{ unread_notifications }}</span>{% endif %}
+      </a>
+      <a href="{% url 'accounts:profile' %}" class="nav-item {% if url_name == 'profile' %}active{% endif %}"><span>👤</span> <span>{% trans "پروفایل" %}</span></a>
+      <a href="{% url 'accounts:settings' %}" class="nav-item {% if url_name == 'settings' %}active{% endif %}"><span>⚙️</span> <span>{% trans "تنظیمات" %}</span></a>
       <a href="{% url 'accounts:logout' %}" class="nav-item"><span>🚪</span> <span>{% trans "خروج" %}</span></a>
     </div>
   </nav>
@@ -51,3 +91,4 @@
     </div>
   </div>
 </aside>
+{% endwith %}
