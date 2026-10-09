@@ -30,7 +30,7 @@ INSTALLED_APPS = [
     'tickets',
     'cafeteria',
     'wallet',
-    #'panels',
+    'panels',
     'core',
 ]
 
