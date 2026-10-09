@@ -1,0 +1,40 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "کاربران" %}{% endblock %}
+{% block heading %}👥 {% trans "کاربران و سطح دسترسی" %}{% endblock %}
+{% block panel_content %}
+<div class="card mb-3"><div class="flex-between" style="flex-wrap:wrap;gap:12px;">
+  <form method="get" class="flex gap-2" style="flex-wrap:wrap;">
+    <input class="form-control" name="q" value="{{ q }}" placeholder="{% trans 'جستجو: نام، نام کاربری، شماره' %}">
+    <select name="role" class="form-control form-select" style="width:auto;">
+      <option value="">{% trans "همه نقش‌ها" %}</option>
+      {% for v, l in roles %}<option value="{{ v }}" {% if v == role %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary btn-sm">{% trans "فیلتر" %}</button>
+  </form>
+  <div class="flex gap-2">
+    <a href="{% url 'panels:manager_students_import' %}" class="btn btn-outline">📥 {% trans "وارد کردن از اکسل" %}</a>
+    <a href="{% url 'panels:manager_user_create' %}" class="btn btn-primary">+ {% trans "افزودن کاربر" %}</a>
+  </div>
+</div></div>
+<div class="card"><div class="table-wrapper"><table>
+  <thead><tr><th>{% trans "کاربر" %}</th><th>{% trans "نام کاربری" %}</th><th>{% trans "نقش" %}</th><th>{% trans "بخش" %}</th><th>{% trans "وضعیت" %}</th><th></th></tr></thead>
+  <tbody>
+  {% for u in users %}
+  <tr>
+    <td>{{ u.display_name }}{% if u.student_id %}<br><small class="text-muted">{{ u.student_id }}</small>{% endif %}</td>
+    <td>{{ u.username }}</td>
+    <td><span class="badge badge-accent">{{ u.get_role_display }}</span></td>
+    <td>{{ u.get_gender_display|default:"—" }}</td>
+    <td>{% if u.is_active %}<span class="badge badge-success">{% trans "فعال" %}</span>{% else %}<span class="badge badge-danger">{% trans "غیرفعال" %}</span>{% endif %}</td>
+    <td class="flex gap-1">
+      <a class="btn btn-outline btn-sm" href="{% url 'panels:manager_user_edit' u.pk %}">{% trans "ویرایش" %}</a>
+      {% if u.pk != user.pk %}
+      <form method="post" action="{% url 'panels:manager_user_toggle' u.pk %}">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn btn-ghost btn-sm">{% if u.is_active %}{% trans "غیرفعال" %}{% else %}{% trans "فعال‌سازی" %}{% endif %}</button></form>
+      {% endif %}
+    </td>
+  </tr>
+  {% empty %}<tr><td colspan="6" class="text-muted" style="text-align:center;">{% trans "کاربری یافت نشد" %}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

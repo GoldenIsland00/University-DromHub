@@ -1,0 +1,49 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "اتاق‌ها و تخت‌ها" %}{% endblock %}
+{% block heading %}🛏️ {% trans "مدیریت اتاق و اختصاص تخت" %}{% endblock %}
+{% block panel_content %}
+<div class="card mb-3">
+  <form method="get" class="flex gap-2" style="flex-wrap:wrap;">
+    <select name="section" class="form-control form-select" style="width:auto;">
+      <option value="">{% trans "همه بخش‌ها" %}</option>
+      <option value="male" {% if section == 'male' %}selected{% endif %}>{% trans "برادران" %}</option>
+      <option value="female" {% if section == 'female' %}selected{% endif %}>{% trans "خواهران" %}</option>
+    </select>
+    <button class="btn btn-primary btn-sm">{% trans "فیلتر" %}</button>
+  </form>
+</div>
+<div class="card"><div class="table-wrapper"><table>
+<thead><tr>
+  <th>{% trans "ساختمان" %}</th><th>{% trans "اتاق" %}</th><th>{% trans "طبقه" %}</th>
+  <th>{% trans "ظرفیت" %}</th><th>{% trans "اشغال" %}</th><th>{% trans "تخت‌ها" %}</th>
+</tr></thead>
+<tbody>
+{% for row in rows %}
+<tr>
+  <td>{{ row.building.name }} <small class="text-muted">({{ row.building.get_section_display }})</small></td>
+  <td><strong>{{ row.room.number }}</strong></td>
+  <td>{{ row.room.floor }}</td>
+  <td>{{ row.capacity }}</td>
+  <td>{{ row.occupied }} / {{ row.capacity }}</td>
+  <td>
+    {% for bed in row.beds %}
+      <div style="margin-bottom:4px;">
+        {% trans "تخت" %} {{ bed.number }}:
+        {% if bed.occupant %}
+          <span class="badge badge-success">{{ bed.occupant.display_name }}</span>
+          <form method="post" action="{% url 'panels:manager_room_assign' %}" style="display:inline;">{% csrf_token %}
+            <input type="hidden" name="action" value="release"><input type="hidden" name="bed_id" value="{{ bed.pk }}">
+            <button class="btn btn-ghost btn-sm">{% trans "تخلیه" %}</button>
+          </form>
+        {% else %}
+          <span class="badge badge-warning">{% trans "خالی" %}</span>
+          <a class="btn btn-outline btn-sm" href="{% url 'panels:manager_room_assign' %}?bed={{ bed.pk }}">{% trans "اختصاص" %}</a>
+        {% endif %}
+      </div>
+    {% empty %}<span class="text-muted">—</span>{% endfor %}
+  </td>
+</tr>
+{% empty %}<tr><td colspan="6" class="text-muted" style="text-align:center;">{% trans "اتاقی یافت نشد" %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

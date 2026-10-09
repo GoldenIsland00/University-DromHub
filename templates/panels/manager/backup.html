@@ -1,0 +1,87 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "بک‌آپ و بازگردانی" %}{% endblock %}
+{% block heading %}💾 {% trans "بک‌آپ و بازگردانی داده‌ها" %}{% endblock %}
+{% block panel_content %}
+
+<div class="grid-2" style="gap:16px;">
+
+  <!-- بک‌آپ -->
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">📦 {% trans "گرفتن بک‌آپ" %}</h3></div>
+    <p class="text-muted mb-3" style="font-size:.9rem;">
+      {% trans "از کل داده‌های سیستم بک‌آپ بگیرید. دو نوع بک‌آپ در دسترس است:" %}
+    </p>
+
+    {% if is_sqlite %}
+    <div style="margin-bottom:16px;padding:12px;border:1px solid var(--border);border-radius:8px;">
+      <strong>{% trans "بک‌آپ کامل دیتابیس (SQLite)" %}</strong>
+      <p class="text-muted" style="font-size:.85rem;margin:6px 0 10px;">
+        {% trans "فایل کامل پایگاه داده. مناسب‌ترین گزینه برای بازگردانی دقیق. حجم فعلی:" %}
+        {{ db_size|filesizeformat }}
+      </p>
+      <a href="{% url 'panels:manager_backup_db' %}" class="btn btn-primary btn-sm">
+        ⬇️ {% trans "دانلود بک‌آپ کامل (.sqlite3)" %}
+      </a>
+    </div>
+    {% endif %}
+
+    <div style="padding:12px;border:1px solid var(--border);border-radius:8px;">
+      <strong>{% trans "خروجی JSON (قابل حمل)" %}</strong>
+      <p class="text-muted" style="font-size:.85rem;margin:6px 0 10px;">
+        {% trans "داده‌ها به صورت JSON. قابل استفاده در سرور دیگر یا پس از تغییر موتور دیتابیس." %}
+      </p>
+      <a href="{% url 'panels:manager_backup_json' %}" class="btn btn-outline btn-sm">
+        ⬇️ {% trans "دانلود بک‌آپ JSON" %}
+      </a>
+    </div>
+  </div>
+
+  <!-- بازگردانی -->
+  <div class="card" style="border-color:var(--warning, #f59e0b);">
+    <div class="card-header"><h3 class="card-title">⚠️ {% trans "بازگردانی از بک‌آپ" %}</h3></div>
+    <p class="text-muted mb-3" style="font-size:.9rem;color:var(--warning, #f59e0b);">
+      {% trans "هشدار: بازگردانی داده‌های فعلی را تغییر می‌دهد یا جایگزین می‌کند. قبل از بازگردانی حتماً یک بک‌آپ جدید بگیرید." %}
+    </p>
+
+    <form method="post" action="{% url 'panels:manager_backup_restore' %}" enctype="multipart/form-data"
+          onsubmit="return confirm('{% trans "آیا از بازگردانی مطمئن هستید؟ این عمل قابل بازگشت نیست مگر بک‌آپ قبلی داشته باشید." %}');">
+      {% csrf_token %}
+      <div class="form-group mb-3">
+        <label class="form-label">{% trans "فایل بک‌آپ" %}</label>
+        <input type="file" name="backup_file" accept=".sqlite3,.db,.sqlite,.json" class="form-control" required>
+        <small class="text-muted">{% trans "فرمت‌های مجاز: .sqlite3 یا .json" %}</small>
+      </div>
+
+      <div class="form-group mb-3">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" name="confirm" value="yes" required>
+          <span style="font-size:.9rem;">{% trans "تأیید می‌کنم که از عواقب بازگردانی آگاهم و بک‌آپ فعلی گرفته‌ام." %}</span>
+        </label>
+      </div>
+
+      <div class="form-group mb-3">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+          <input type="checkbox" name="flush" value="yes">
+          <span style="font-size:.85rem;">{% trans "قبل از بارگذاری JSON همه داده‌ها پاک شوند (فقط برای JSON)" %}</span>
+        </label>
+      </div>
+
+      <button type="submit" class="btn btn-primary" style="background:var(--warning, #f59e0b);border-color:var(--warning, #f59e0b);">
+        🔄 {% trans "بازگردانی" %}
+      </button>
+    </form>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">{% trans "راهنما" %}</h3></div>
+  <ul style="font-size:.9rem;line-height:1.9;padding-right:18px;">
+    <li>{% trans "بک‌آپ SQLite: کل پایگاه داده را جایگزین می‌کند. قبل از جایگزینی، نسخه فعلی با پسوند .pre_restore ذخیره می‌شود." %}</li>
+    <li>{% trans "بک‌آپ JSON: داده‌ها را بارگذاری می‌کند. اگر گزینه «پاک‌سازی» را فعال کنید، ابتدا همه داده‌ها حذف می‌شوند." %}</li>
+    <li>{% trans "پس از بازگردانی SQLite، از سیستم خارج شوید و دوباره وارد شوید." %}</li>
+    <li>{% trans "توصیه می‌شود قبل از هر به‌روزرسانی یا تغییر بزرگ، بک‌آپ کامل بگیرید." %}</li>
+  </ul>
+</div>
+
+{% endblock %}

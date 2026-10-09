@@ -1,0 +1,34 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "اختصاص تخت" %}{% endblock %}
+{% block heading %}🛏️ {% trans "اختصاص دانشجو به تخت" %}{% endblock %}
+{% block panel_content %}
+{% if not bed %}<div class="card"><p class="text-muted">{% trans "تختی انتخاب نشده." %}</p>
+<a href="{% url 'panels:manager_rooms' %}" class="btn btn-outline">{% trans "بازگشت" %}</a></div>
+{% else %}
+<div class="card">
+  <p>{% trans "اتاق" %}: <strong>{{ bed.room.number }}</strong> — {% trans "تخت" %}: <strong>{{ bed.number }}</strong>
+  ({{ bed.room.building.name }} — {{ bed.room.building.get_section_display }})</p>
+  {% if bed.occupant %}<p class="text-muted">{% trans "ساکن فعلی" %}: {{ bed.occupant.display_name }}</p>{% endif %}
+  <form method="post">{% csrf_token %}
+    <input type="hidden" name="action" value="assign">
+    <input type="hidden" name="bed_id" value="{{ bed.pk }}">
+    <div class="form-group mb-3">
+      <label class="form-label">{% trans "شماره دانشجویی یا نام کاربری" %}</label>
+      <input class="form-control" name="student_id" required placeholder="{% trans 'مثلاً 400123456' %}">
+    </div>
+    <div class="form-group mb-3">
+      <label class="form-label">{% trans "یا انتخاب از بدون اتاق" %}</label>
+      <select name="user_pk" class="form-control form-select">
+        <option value="">—</option>
+        {% for u in unassigned %}
+        <option value="{{ u.pk }}">{{ u.display_name }} ({{ u.student_id|default:u.username }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <button class="btn btn-primary">{% trans "اختصاص" %}</button>
+    <a href="{% url 'panels:manager_rooms' %}" class="btn btn-ghost">{% trans "انصراف" %}</a>
+  </form>
+</div>
+{% endif %}
+{% endblock %}

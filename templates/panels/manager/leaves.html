@@ -1,0 +1,41 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "مرخصی‌ها" %}{% endblock %}
+{% block heading %}🚶 {% trans "بررسی درخواست‌های مرخصی" %}{% endblock %}
+{% block panel_content %}
+<div class="card mb-3">
+  <form method="get" class="flex gap-2">
+    <select name="status" class="form-control form-select" style="width:auto;">
+      <option value="pending" {% if status == 'pending' %}selected{% endif %}>{% trans "در انتظار" %}</option>
+      <option value="approved" {% if status == 'approved' %}selected{% endif %}>{% trans "تأیید شده" %}</option>
+      <option value="rejected" {% if status == 'rejected' %}selected{% endif %}>{% trans "رد شده" %}</option>
+      <option value="">{% trans "همه" %}</option>
+    </select>
+    <button class="btn btn-primary btn-sm">{% trans "فیلتر" %}</button>
+  </form>
+</div>
+<div class="card"><div class="table-wrapper"><table>
+<thead><tr><th>{% trans "دانشجو" %}</th><th>{% trans "از" %}</th><th>{% trans "تا" %}</th><th>{% trans "مقصد" %}</th><th>{% trans "دلیل" %}</th><th>{% trans "وضعیت" %}</th><th></th></tr></thead>
+<tbody>
+{% for L in leaves %}
+<tr>
+  <td>{{ L.user.display_name }}</td>
+  <td>{{ L.start_at|date:"Y/m/d H:i" }}</td>
+  <td>{{ L.end_at|date:"Y/m/d H:i" }}</td>
+  <td>{{ L.destination|default:"—" }}</td>
+  <td>{{ L.reason|truncatechars:40 }}</td>
+  <td>{{ L.get_status_display }}</td>
+  <td>
+    {% if L.status == 'pending' %}
+    <form method="post" action="{% url 'panels:manager_leave_review' L.pk %}" class="flex gap-1">{% csrf_token %}
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <input class="form-control" name="note" placeholder="{% trans 'یادداشت' %}" style="width:120px;">
+      <button name="action" value="approve" class="btn btn-primary btn-sm">{% trans "تأیید" %}</button>
+      <button name="action" value="reject" class="btn btn-ghost btn-sm">{% trans "رد" %}</button>
+    </form>
+    {% endif %}
+  </td>
+</tr>
+{% empty %}<tr><td colspan="7" class="text-muted" style="text-align:center;">{% trans "موردی نیست" %}</td></tr>{% endfor %}
+</tbody></table></div></div>
+{% endblock %}

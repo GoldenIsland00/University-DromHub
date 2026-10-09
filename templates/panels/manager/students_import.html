@@ -1,0 +1,64 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "وارد کردن دانشجویان" %}{% endblock %}
+{% block heading %}📥 {% trans "وارد کردن دانشجویان از اکسل" %}{% endblock %}
+{% block panel_content %}
+
+{% if not openpyxl_ok %}
+<div class="card" style="border-color:var(--danger);margin-bottom:16px;">
+  <p style="color:var(--danger);">{% trans "کتابخانه openpyxl نصب نیست. در ترمینال اجرا کنید:" %} <code>pip install openpyxl</code></p>
+</div>
+{% endif %}
+
+<div class="grid-2" style="gap:16px;">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "آپلود فایل اکسل" %}</h3></div>
+    <p class="text-muted mb-3" style="font-size:.9rem;">
+      {% trans "فایل .xlsx را انتخاب کنید. ستون‌های الزامی: username, first_name, last_name, student_id, gender" %}
+    </p>
+    <form method="post" action="{% url 'panels:manager_students_import_upload' %}" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="form-group mb-3">
+        <label class="form-label">{% trans "فایل اکسل" %}</label>
+        <input type="file" name="excel_file" accept=".xlsx,.xlsm" class="form-control" required>
+      </div>
+      <button type="submit" class="btn btn-primary" {% if not openpyxl_ok %}disabled{% endif %}>
+        {% trans "شروع وارد کردن" %}
+      </button>
+    </form>
+  </div>
+
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "دانلود نمونه" %}</h3></div>
+    <p class="text-muted mb-3" style="font-size:.9rem;">
+      {% trans "ابتدا فایل نمونه را دانلود کنید، آن را پر کنید و سپس آپلود نمایید." %}
+    </p>
+    <a href="{% url 'panels:manager_students_import_template' %}" class="btn btn-outline">
+      📄 {% trans "دانلود فایل نمونه اکسل" %}
+    </a>
+    <hr style="margin:16px 0;border-color:var(--border);">
+    <h4 style="font-size:.95rem;margin-bottom:8px;">{% trans "ستون‌ها" %}</h4>
+    <ul style="font-size:.85rem;line-height:1.8;padding-right:18px;">
+      <li><code>username</code> — {% trans "نام کاربری (الزامی، یکتا)" %}</li>
+      <li><code>first_name</code> — {% trans "نام" %}</li>
+      <li><code>last_name</code> — {% trans "نام خانوادگی" %}</li>
+      <li><code>student_id</code> — {% trans "شماره دانشجویی (الزامی، یکتا)" %}</li>
+      <li><code>gender</code> — <code>male</code> {% trans "یا" %} <code>female</code></li>
+      <li><code>phone</code> — {% trans "موبایل (اختیاری)" %}</li>
+      <li><code>email</code> — {% trans "ایمیل (اختیاری)" %}</li>
+      <li><code>password</code> — {% trans "رمز (اختیاری؛ پیش‌فرض" %} <code>{{ default_password }}</code>)</li>
+    </ul>
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">{% trans "نکات مهم" %}</h3></div>
+  <ul style="font-size:.9rem;line-height:1.9;padding-right:18px;">
+    <li>{% trans "نقش همه کاربران واردشده به‌صورت خودکار «دانشجو» تنظیم می‌شود." %}</li>
+    <li>{% trans "کیف پول برای هر دانشجو به‌صورت خودکار ساخته می‌شود." %}</li>
+    <li>{% trans "اگر نام کاربری یا شماره دانشجویی تکراری باشد، آن ردیف رد می‌شود و بقیه وارد می‌شوند." %}</li>
+    <li>{% trans "gender باید دقیقاً male یا female باشد (بدون فاصله و حروف بزرگ/کوچک مهم نیست)." %}</li>
+  </ul>
+</div>
+
+{% endblock %}

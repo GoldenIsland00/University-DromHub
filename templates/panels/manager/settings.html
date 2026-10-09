@@ -1,0 +1,24 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "تنظیمات سیستم" %}{% endblock %}
+{% block heading %}⚙️ {% trans "تنظیمات سامانه" %}{% endblock %}
+{% block panel_content %}
+<div class="card" style="max-width:560px;">
+<form method="post">{% csrf_token %}
+  <div class="form-group mb-3"><label class="form-label">{% trans "نام سامانه" %}</label>
+    <input class="form-control" name="site_name" value="{{ cfg.site_name }}"></div>
+  <div class="form-group mb-3"><label class="form-label">{% trans "ساعت قطع سفارش همان روز (۰–۲۳)" %}</label>
+    <input class="form-control" type="number" min="0" max="23" name="order_cutoff_hour" value="{{ cfg.order_cutoff_hour }}"></div>
+  <div class="form-group mb-3"><label class="form-label">{% trans "آستانه هشدار موجودی کم (تومان)" %}</label>
+    <input class="form-control" type="number" name="low_balance_threshold" value="{{ cfg.low_balance_threshold }}"></div>
+  <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" name="allow_student_charge" {% if cfg.allow_student_charge %}checked{% endif %}> {% trans "اجازه شارژ آنلاین دانشجو" %}</label>
+  <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" name="mock_payment_enabled" {% if cfg.mock_payment_enabled %}checked{% endif %}> {% trans "درگاه ساختگی (دمو)" %}</label>
+  <hr style="border-color:var(--border);margin:16px 0;">
+  <p class="text-muted mb-2">{% trans "وعده‌های فعال" %}</p>
+  <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" name="breakfast_enabled" {% if cfg.breakfast_enabled %}checked{% endif %}> {% trans "صبحانه" %}</label>
+  <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" name="lunch_enabled" {% if cfg.lunch_enabled %}checked{% endif %}> {% trans "ناهار" %}</label>
+  <label style="display:flex;gap:8px;align-items:center;margin-bottom:8px;"><input type="checkbox" name="dinner_enabled" {% if cfg.dinner_enabled %}checked{% endif %}> {% trans "شام" %}</label>
+  <div class="mt-3"><button class="btn btn-primary">{% trans "ذخیره" %}</button></div>
+</form>
+</div>
+{% endblock %}

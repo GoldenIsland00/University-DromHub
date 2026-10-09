@@ -1,1 +1,23 @@
-
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "گزارش‌ها" %}{% endblock %}
+{% block heading %}📊 {% trans "گزارش و خروجی اکسل" %}{% endblock %}
+{% block panel_content %}
+<div class="grid-2" style="gap:16px;">
+  <div class="card"><h3 class="card-title mb-2">{% trans "سفارش‌های غذا" %}</h3>
+    <p class="text-muted mb-2" style="font-size:.9rem;">{% trans "کد فیش، دانشجو، وعده، مبلغ، وضعیت تحویل" %}</p>
+    <a class="btn btn-primary" href="{% url 'panels:manager_report_export' 'meals' %}">⬇️ Excel</a></div>
+  <div class="card"><h3 class="card-title mb-2">{% trans "تراکنش کیف پول" %}</h3>
+    <p class="text-muted mb-2" style="font-size:.9rem;">{% trans "شارژ، خرید غذا، بازگشت وجه" %}</p>
+    <a class="btn btn-primary" href="{% url 'panels:manager_report_export' 'wallet' %}">⬇️ Excel</a></div>
+  <div class="card"><h3 class="card-title mb-2">{% trans "تردد گارد" %}</h3>
+    <p class="text-muted mb-2" style="font-size:.9rem;">{% trans "ورود و خروج دانشجویان" %}</p>
+    <a class="btn btn-primary" href="{% url 'panels:manager_report_export' 'access' %}">⬇️ Excel</a></div>
+  <div class="card"><h3 class="card-title mb-2">{% trans "لیست دانشجویان" %}</h3>
+    <p class="text-muted mb-2" style="font-size:.9rem;">{% trans "اطلاعات و اتاق اختصاص‌یافته" %}</p>
+    <a class="btn btn-primary" href="{% url 'panels:manager_report_export' 'students' %}">⬇️ Excel</a></div>
+  <div class="card"><h3 class="card-title mb-2">{% trans "اتاق‌ها و تخت‌ها" %}</h3>
+    <p class="text-muted mb-2" style="font-size:.9rem;">{% trans "ظرفیت و ساکنان" %}</p>
+    <a class="btn btn-primary" href="{% url 'panels:manager_report_export' 'rooms' %}">⬇️ Excel</a></div>
+</div>
+{% endblock %}

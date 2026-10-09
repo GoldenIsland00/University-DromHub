@@ -1,0 +1,47 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% if creating %}{% trans "افزودن کاربر" %}{% else %}{% trans "ویرایش کاربر" %}{% endif %}{% endblock %}
+{% block heading %}{% if creating %}➕ {% trans "افزودن کاربر جدید" %}{% else %}✏️ {% trans "ویرایش" %} {{ target.display_name }}{% endif %}{% endblock %}
+{% block panel_content %}
+<div class="grid-2">
+  <div class="card">
+    <form method="post">{% csrf_token %}
+      <input type="hidden" name="action" value="save">
+      {{ form.non_field_errors }}
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label" {% if field.field.widget.input_type == 'checkbox' %}style="display:flex;gap:8px;align-items:center;"{% endif %}>
+          {% if field.field.widget.input_type == 'checkbox' %}{{ field }} {{ field.label }}{% else %}{{ field.label }}{% endif %}
+        </label>
+        {% if field.field.widget.input_type != 'checkbox' %}{{ field }}{% endif %}
+        {% if field.help_text %}<div class="form-hint">{{ field.help_text }}</div>{% endif %}
+        {% for e in field.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+      {% endfor %}
+      <button class="btn btn-primary">{% if creating %}{% trans "ایجاد کاربر" %}{% else %}{% trans "ذخیره" %}{% endif %}</button>
+      <a href="{% url 'panels:manager_users' %}" class="btn btn-ghost">{% trans "بازگشت" %}</a>
+    </form>
+  </div>
+  {% if not creating %}
+  <div>
+    <div class="card mb-3">
+      <h3 class="card-title mb-2">🔑 {% trans "تغییر رمز عبور" %}</h3>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="password">
+        {{ pw_form.non_field_errors }}
+        {% for field in pw_form %}<div class="form-group"><label class="form-label">{{ field.label }}</label>{{ field }}{% for e in field.errors %}<div class="form-error">{{ e }}</div>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-outline">{% trans "تغییر رمز" %}</button>
+      </form>
+    </div>
+    {% if target.is_student %}
+    <div class="card">
+      <h3 class="card-title mb-2">💰 {% trans "شارژ کیف پول" %} <small class="text-muted">({% trans "موجودی" %}: {{ target.wallet.balance|floatformat:0 }})</small></h3>
+      <form method="post">{% csrf_token %}<input type="hidden" name="action" value="charge">
+        {% for field in charge_form %}<div class="form-group"><label class="form-label">{{ field.label }}</label>{{ field }}{% for e in field.errors %}<div class="form-error">{{ e }}</div>{% endfor %}</div>{% endfor %}
+        <button class="btn btn-success">{% trans "شارژ" %}</button>
+      </form>
+    </div>
+    {% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

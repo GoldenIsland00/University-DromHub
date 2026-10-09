@@ -1,0 +1,94 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "پنل مدیریت" %}
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">{% trans "نمودار کاربران به تفکیک نقش" %}</h3>
+    <div class="flex gap-1">
+      <a href="{% url 'panels:manager_reports' %}" class="btn btn-outline btn-sm">📊 {% trans "گزارش‌ها" %}</a>
+      <a href="{% url 'panels:manager_rooms' %}" class="btn btn-outline btn-sm">🛏️ {% trans "اتاق‌ها" %}</a>
+      <a href="{% url 'panels:manager_settings' %}" class="btn btn-outline btn-sm">⚙️ {% trans "تنظیمات" %}</a>
+    </div>
+  </div>
+  <div style="display:flex;align-items:flex-end;gap:12px;height:140px;padding:12px 8px;">
+    {% for label, n, value in role_stats %}
+    <div style="flex:1;text-align:center;">
+      <div class="bar-chart" style="background:var(--accent,#3b82f6);height:{{ n|default:0|add:1 }}px;max-height:100px;min-height:4px;border-radius:6px 6px 0 0;margin:0 auto;width:70%;opacity:.85;" title="{{ n }}"></div>
+      <div style="font-size:.7rem;margin-top:6px;">{{ label }}</div>
+      <strong style="font-size:.85rem;">{{ n }}</strong>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block heading %}🛠️ {% trans "پنل مدیریت" %}
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">{% trans "نمودار کاربران به تفکیک نقش" %}</h3>
+    <div class="flex gap-1">
+      <a href="{% url 'panels:manager_reports' %}" class="btn btn-outline btn-sm">📊 {% trans "گزارش‌ها" %}</a>
+      <a href="{% url 'panels:manager_rooms' %}" class="btn btn-outline btn-sm">🛏️ {% trans "اتاق‌ها" %}</a>
+      <a href="{% url 'panels:manager_settings' %}" class="btn btn-outline btn-sm">⚙️ {% trans "تنظیمات" %}</a>
+    </div>
+  </div>
+  <div style="display:flex;align-items:flex-end;gap:12px;height:140px;padding:12px 8px;">
+    {% for label, n, value in role_stats %}
+    <div style="flex:1;text-align:center;">
+      <div class="bar-chart" style="background:var(--accent,#3b82f6);height:{{ n|default:0|add:1 }}px;max-height:100px;min-height:4px;border-radius:6px 6px 0 0;margin:0 auto;width:70%;opacity:.85;" title="{{ n }}"></div>
+      <div style="font-size:.7rem;margin-top:6px;">{{ label }}</div>
+      <strong style="font-size:.85rem;">{{ n }}</strong>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block panel_content %}
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-content"><div class="stat-label">{% trans "کل کاربران" %}</div><div class="stat-value">{{ total_users }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon green">🛏️</div><div class="stat-content"><div class="stat-label">{% trans "کل اتاق‌ها" %}</div><div class="stat-value">{{ total_rooms }}</div><div class="stat-change text-muted">{% trans "برادران" %}: {{ male_rooms }} | {% trans "خواهران" %}: {{ female_rooms }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon orange">🎫</div><div class="stat-content"><div class="stat-label">{% trans "تیکت‌های باز" %}</div><div class="stat-value">{{ open_tickets }}</div><div class="stat-change text-muted">{% trans "بدون ارجاع" %}: {{ unassigned_tickets }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon purple">🍽️</div><div class="stat-content"><div class="stat-label">{% trans "سفارش غذای امروز" %}</div><div class="stat-value">{{ today_orders }}</div></div></div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "کاربران به تفکیک نقش" %}</h3>
+      <div class="flex gap-1">
+        <a href="{% url 'panels:manager_students_import' %}" class="btn btn-outline btn-sm">📥 {% trans "اکسل" %}</a>
+        <a href="{% url 'panels:manager_backup' %}" class="btn btn-outline btn-sm">💾 {% trans "بک‌آپ" %}</a>
+        <a href="{% url 'panels:manager_user_create' %}" class="btn btn-primary btn-sm">+ {% trans "افزودن کاربر" %}</a>
+      </div>
+    </div>
+    <div class="table-wrapper"><table>
+      {% for label, n, value in role_stats %}<tr><td>{{ label }}</td><td><strong>{{ n }}</strong></td><td><a class="btn btn-ghost btn-sm" href="{% url 'panels:manager_users' %}?role={{ value }}">{% trans "مشاهده" %}</a></td></tr>{% endfor %}
+    </table></div>
+    <p class="text-muted mt-2" style="font-size:.85rem;">{% trans "دانشجویان" %}: {% trans "برادران" %} {{ male_students }} · {% trans "خواهران" %} {{ female_students }} · {% trans "تردد امروز" %}: {{ today_gate }}</p>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "تیکت‌های باز اخیر" %}</h3><a href="{% url 'panels:maintenance_tickets' %}" class="btn btn-ghost btn-sm">{% trans "همه" %}</a></div>
+    {% for t in recent_tickets %}
+    <a href="{% url 'tickets:detail' t.pk %}" class="ticket-item"><div class="ticket-status open"></div><div class="ticket-body">
+      <div class="ticket-title">{{ t.subject }}</div><div class="ticket-meta"><span>{{ t.user.display_name }}</span> · <span>{{ t.get_priority_display }}</span></div></div></a>
+    {% empty %}<p class="text-muted">{% trans "تیکت بازی وجود ندارد" %}</p>{% endfor %}
+  </div>
+</div>
+
+<div class="card mt-3">
+  <div class="card-header"><h3 class="card-title">{% trans "نمودار کاربران به تفکیک نقش" %}</h3>
+    <div class="flex gap-1">
+      <a href="{% url 'panels:manager_reports' %}" class="btn btn-outline btn-sm">📊 {% trans "گزارش‌ها" %}</a>
+      <a href="{% url 'panels:manager_rooms' %}" class="btn btn-outline btn-sm">🛏️ {% trans "اتاق‌ها" %}</a>
+      <a href="{% url 'panels:manager_settings' %}" class="btn btn-outline btn-sm">⚙️ {% trans "تنظیمات" %}</a>
+    </div>
+  </div>
+  <div style="display:flex;align-items:flex-end;gap:12px;height:140px;padding:12px 8px;">
+    {% for label, n, value in role_stats %}
+    <div style="flex:1;text-align:center;">
+      <div class="bar-chart" style="background:var(--accent,#3b82f6);height:{{ n|default:0|add:1 }}px;max-height:100px;min-height:4px;border-radius:6px 6px 0 0;margin:0 auto;width:70%;opacity:.85;" title="{{ n }}"></div>
+      <div style="font-size:.7rem;margin-top:6px;">{{ label }}</div>
+      <strong style="font-size:.85rem;">{{ n }}</strong>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
