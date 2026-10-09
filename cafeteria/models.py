@@ -2,7 +2,15 @@ from django.conf import settings
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from django.core.validators import MinValueValidator
+from datetime import timedelta
 from decimal import Decimal
+import secrets
+
+
+class MealPeriod(models.TextChoices):
+    BREAKFAST = 'breakfast', _('صبحانه')
+    LUNCH = 'lunch', _('ناهار')
+    DINNER = 'dinner', _('شام')
 
 
 class MealItem(models.Model):
@@ -33,7 +41,7 @@ class MealItem(models.Model):
 
 
 class WeeklyMenu(models.Model):
-    """منوی یک روز از هفته"""
+    """منوی یک وعده از یک روز هفته"""
     class Weekday(models.IntegerChoices):
         SATURDAY = 0, _('شنبه')
         SUNDAY = 1, _('یکشنبه')
@@ -48,6 +56,13 @@ class WeeklyMenu(models.Model):
         _('روز هفته'),
         choices=Weekday.choices
     )
+    meal_period = models.CharField(
+        _('وعده'),
+        max_length=20,
+        choices=MealPeriod.choices,
+        default=MealPeriod.LUNCH,
+        db_index=True,
+    )
     options = models.ManyToManyField(
         MealItem,
         related_name='menus',
@@ -57,15 +72,19 @@ class WeeklyMenu(models.Model):
     class Meta:
         verbose_name = _('منوی روزانه')
         verbose_name_plural = _('منوی هفتگی')
-        unique_together = ['week_start', 'weekday']
-        ordering = ['week_start', 'weekday']
+        unique_together = ['week_start', 'weekday', 'meal_period']
+        ordering = ['week_start', 'weekday', 'meal_period']
 
     def __str__(self):
-        return f"{self.get_weekday_display()} - {self.week_start}"
+        return f"{self.get_weekday_display()} — {self.get_meal_period_display()} — {self.week_start}"
+
+    @property
+    def date(self):
+        return self.week_start + timedelta(days=self.weekday)
 
 
 class MealOrder(models.Model):
-    """سفارش غذای دانشجو برای یک روز"""
+    """سفارش غذای دانشجو برای یک وعده"""
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
@@ -90,12 +109,48 @@ class MealOrder(models.Model):
         decimal_places=0
     )
     created_at = models.DateTimeField(_('تاریخ سفارش'), auto_now_add=True)
+    is_served = models.BooleanField(_('تحویل داده شد'), default=False)
+    served_at = models.DateTimeField(_('زمان تحویل'), null=True, blank=True)
+    served_by = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='served_orders',
+        verbose_name=_('تحویل‌دهنده')
+    )
+    receipt_code = models.CharField(
+        _('کد فیش'),
+        max_length=12,
+        unique=True,
+        db_index=True,
+        blank=True,
+        help_text=_('کد یکتای هر وعده برای تحویل در سلف')
+    )
 
     class Meta:
         verbose_name = _('سفارش غذا')
         verbose_name_plural = _('سفارش‌های غذا')
-        unique_together = ['user', 'menu']  # one meal per day per user
+        unique_together = ['user', 'menu']
         ordering = ['-created_at']
 
+    @staticmethod
+    def generate_receipt_code():
+        alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'
+        for _ in range(50):
+            code = ''.join(secrets.choice(alphabet) for _ in range(6))
+            if not MealOrder.objects.filter(receipt_code=code).exists():
+                return code
+        return secrets.token_hex(4).upper()
+
+    def save(self, *args, **kwargs):
+        if not self.receipt_code:
+            self.receipt_code = self.generate_receipt_code()
+        super().save(*args, **kwargs)
+
     def __str__(self):
-        return f"{self.user} - {self.meal_item} ({self.menu})"
+        return f"{self.user} - {self.meal_item} ({self.menu}) [{self.receipt_code}]"
+
+    @property
+    def meal_period(self):
+        return self.menu.meal_period

@@ -12,14 +12,14 @@ class MealItemAdmin(admin.ModelAdmin):
 
 @admin.register(WeeklyMenu)
 class WeeklyMenuAdmin(admin.ModelAdmin):
-    list_display = ('week_start', 'weekday', 'get_weekday_display')
-    list_filter = ('week_start', 'weekday')
+    list_display = ('week_start', 'weekday', 'meal_period', 'get_weekday_display')
+    list_filter = ('week_start', 'weekday', 'meal_period')
     filter_horizontal = ('options',)
 
 
 @admin.register(MealOrder)
 class MealOrderAdmin(admin.ModelAdmin):
-    list_display = ('user', 'menu', 'meal_item', 'price_at_order', 'created_at')
-    list_filter = ('menu__week_start', 'created_at')
-    search_fields = ('user__username', 'user__first_name', 'meal_item__name_fa')
+    list_display = ('receipt_code', 'user', 'menu', 'meal_item', 'price_at_order', 'is_served', 'created_at')
+    list_filter = ('menu__week_start', 'is_served', 'created_at')
+    search_fields = ('receipt_code', 'user__username', 'user__first_name', 'user__student_id', 'meal_item__name_fa')
     raw_id_fields = ('user', 'menu', 'meal_item')
