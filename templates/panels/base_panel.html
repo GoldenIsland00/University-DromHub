@@ -1,1 +1,15 @@
-
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% block panel_title %}{% endblock %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+  {% include "partials/sidebar.html" %}
+  <div class="main-content">
+    {% include "partials/topbar.html" %}
+    <div class="content-area">
+      <h2 class="mb-3">{% block heading %}{% endblock %}</h2>
+      {% block panel_content %}{% endblock %}
+    </div>
+  </div>
+</div>
+{% endblock %}
