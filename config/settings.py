@@ -32,6 +32,7 @@ INSTALLED_APPS = [
     'wallet',
     'panels',
     'core',
+    'panels',
 ]
 
 MIDDLEWARE = [
