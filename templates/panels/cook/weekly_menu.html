@@ -1,0 +1,33 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "منوی هفتگی" %}{% endblock %}
+{% block heading %}📅 {% trans "منوی هفتگی" %} — {{ week_start|date:"Y/m/d" }}{% endblock %}
+{% block panel_content %}
+<div class="flex gap-2 mb-3">
+  <a href="{% url 'panels:cook_menu' %}" class="btn btn-sm {% if is_next %}btn-outline{% else %}btn-primary{% endif %}">{% trans "این هفته" %}</a>
+  <a href="{% url 'panels:cook_menu' %}?week=next" class="btn btn-sm {% if is_next %}btn-primary{% else %}btn-outline{% endif %}">{% trans "هفته بعد" %}</a>
+</div>
+<form method="post">{% csrf_token %}
+{% for day in days %}
+<div class="card mb-3">
+  <h3 class="card-title">{{ day.label }} <small class="text-muted">{{ day.date|date:"m/d" }}</small></h3>
+  <div class="grid-2" style="gap:12px;">
+  {% for block in day.periods %}
+    <div style="border:1px solid var(--border);border-radius:8px;padding:12px;">
+      <strong>{{ block.label }}</strong>
+      <div style="margin-top:8px;">
+      {% for item, selected in block.choices %}
+        <label style="display:block;margin:4px 0;cursor:pointer;">
+          <input type="checkbox" name="day_{{ day.weekday }}_{{ block.period }}" value="{{ item.pk }}" {% if selected %}checked{% endif %}>
+          {{ item.name_fa }} ({{ item.price|floatformat:0 }})
+        </label>
+      {% empty %}<span class="text-muted">{% trans "غذایی تعریف نشده" %}</span>{% endfor %}
+      </div>
+    </div>
+  {% endfor %}
+  </div>
+</div>
+{% endfor %}
+<button type="submit" class="btn btn-primary btn-lg">{% trans "ذخیره منو" %}</button>
+</form>
+{% endblock %}

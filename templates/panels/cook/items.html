@@ -1,0 +1,38 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "غذاها" %}{% endblock %}
+{% block heading %}🍲 {% trans "غذاها و قیمت‌ها" %}{% endblock %}
+{% block panel_content %}
+<div class="grid-2">
+  <div class="card">
+    <h3 class="card-title mb-2">{% if editing %}{% trans "ویرایش غذا" %}{% else %}{% trans "افزودن غذای جدید" %}{% endif %}</h3>
+    <form method="post">{% csrf_token %}
+      {% for field in form %}
+      <div class="form-group">
+        <label class="form-label">{{ field.label }}</label>{{ field }}
+        {% for e in field.errors %}<div class="form-error">{{ e }}</div>{% endfor %}
+      </div>
+      {% endfor %}
+      <button class="btn btn-primary">{% trans "ذخیره" %}</button>
+      {% if editing %}<a href="{% url 'panels:cook_items' %}" class="btn btn-ghost">{% trans "انصراف" %}</a>{% endif %}
+    </form>
+  </div>
+  <div class="card">
+    <div class="table-wrapper"><table>
+      <thead><tr><th>{% trans "غذا" %}</th><th>{% trans "قیمت" %}</th><th>{% trans "وضعیت" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for i in items %}
+      <tr>
+        <td>{{ i.name_fa }}{% if i.name_en %}<br><small class="text-muted">{{ i.name_en }}</small>{% endif %}</td>
+        <td>{{ i.price|floatformat:0 }}</td>
+        <td>{% if i.is_active %}<span class="badge badge-success">{% trans "فعال" %}</span>{% else %}<span class="badge badge-muted">{% trans "غیرفعال" %}</span>{% endif %}</td>
+        <td class="flex gap-1">
+          <a class="btn btn-outline btn-sm" href="?edit={{ i.pk }}">{% trans "ویرایش" %}</a>
+          <form method="post" action="{% url 'panels:cook_item_toggle' i.pk %}">{% csrf_token %}<button class="btn btn-ghost btn-sm">{% if i.is_active %}{% trans "غیرفعال" %}{% else %}{% trans "فعال‌سازی" %}{% endif %}</button></form>
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="4" class="text-muted" style="text-align:center;">{% trans "غذایی تعریف نشده" %}</td></tr>{% endfor %}
+      </tbody></table></div>
+  </div>
+</div>
+{% endblock %}

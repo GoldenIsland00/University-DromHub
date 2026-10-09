@@ -1,1 +1,37 @@
-
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "پنل آشپز" %}{% endblock %}
+{% block heading %}👨‍🍳 {% trans "داشبورد آشپزخانه" %} — {{ today|date:"Y/m/d" }}{% endblock %}
+{% block panel_content %}
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon orange">🧾</div><div class="stat-content"><div class="stat-label">{% trans "سفارش‌های امروز" %}</div><div class="stat-value">{{ orders_today }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-content"><div class="stat-label">{% trans "تحویل شده" %}</div><div class="stat-value">{{ served_today }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon blue">⏳</div><div class="stat-content"><div class="stat-label">{% trans "در انتظار تحویل" %}</div><div class="stat-value">{{ pending_today }}</div></div></div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "آماده‌سازی امروز" %}</h3>
+      <div class="flex gap-1">
+        <a href="{% url 'panels:cook_serve_code' %}" class="btn btn-primary btn-sm">🔢 {% trans "ثبت با کد فیش" %}</a>
+        <a href="{% url 'panels:cook_orders' %}" class="btn btn-ghost btn-sm">{% trans "لیست سفارش‌ها" %}</a>
+      </div>
+    </div>
+    {% if not menu_today %}<p class="text-muted">{% trans "منوی امروز تعریف نشده است." %} <a href="{% url 'panels:cook_menu' %}">{% trans "تعریف منو" %}</a></p>{% endif %}
+    <div class="table-wrapper"><table>
+      <thead><tr><th>{% trans "وعده" %}</th><th>{% trans "غذا" %}</th><th>{% trans "تعداد" %}</th><th>{% trans "تحویل شده" %}</th></tr></thead>
+      <tbody>
+      {% for t in totals_today %}<tr><td>{{ t.period|default:"—" }}</td><td>{{ t.meal_item__name_fa }}</td><td><strong>{{ t.total }}</strong></td><td>{{ t.served }}</td></tr>
+      {% empty %}<tr><td colspan="3" class="text-muted" style="text-align:center;">{% trans "سفارشی ثبت نشده" %}</td></tr>{% endfor %}
+      </tbody></table></div>
+  </div>
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "پیش‌نیاز فردا" %} ({{ tomorrow|date:"m/d" }})</h3><a href="{% url 'panels:cook_orders' %}?date={{ tomorrow|date:'Y-m-d' }}" class="btn btn-ghost btn-sm">{% trans "جزئیات" %}</a></div>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>{% trans "وعده" %}</th><th>{% trans "غذا" %}</th><th>{% trans "تعداد" %}</th></tr></thead>
+      <tbody>
+      {% for t in totals_tomorrow %}<tr><td>{{ t.period|default:"—" }}</td><td>{{ t.meal_item__name_fa }}</td><td><strong>{{ t.total }}</strong></td></tr>
+      {% empty %}<tr><td colspan="2" class="text-muted" style="text-align:center;">{% trans "سفارشی ثبت نشده" %}</td></tr>{% endfor %}
+      </tbody></table></div>
+  </div>
+</div>
+{% endblock %}

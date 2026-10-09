@@ -1,0 +1,61 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "سفارش‌ها" %}{% endblock %}
+{% block heading %}🧾 {% trans "سفارش‌ها و تحویل غذا" %}{% endblock %}
+{% block panel_content %}
+<div class="card mb-3">
+  <div class="flex-between" style="flex-wrap:wrap;gap:12px;">
+    <div class="flex gap-2" style="align-items:center;">
+      <a class="btn btn-outline btn-sm" href="?date={{ prev_day|date:'Y-m-d' }}">→ {% trans "روز قبل" %}</a>
+      <strong>{% if menu %}{{ menu.get_weekday_display }}{% endif %} {{ day|date:"Y/m/d" }}</strong>
+      <a class="btn btn-outline btn-sm" href="?date={{ next_day|date:'Y-m-d' }}">{% trans "روز بعد" %} ←</a>
+    </div>
+    <form method="get" class="flex gap-2">
+      <input type="hidden" name="date" value="{{ day|date:'Y-m-d' }}">
+      <input class="form-control" name="q" value="{{ q }}" placeholder="{% trans 'نام، شماره دانشجویی یا کد فیش' %}">
+      <select name="period" class="form-control form-select" style="width:auto;">
+        <option value="">{% trans "همه وعده‌ها" %}</option>
+        {% for pv, pl in periods %}<option value="{{ pv }}" {% if period == pv %}selected{% endif %}>{{ pl }}</option>{% endfor %}
+      </select>
+      <select name="status" class="form-control form-select" style="width:auto;">
+        <option value="">{% trans "همه" %}</option>
+        <option value="pending" {% if status == 'pending' %}selected{% endif %}>{% trans "در انتظار" %}</option>
+        <option value="served" {% if status == 'served' %}selected{% endif %}>{% trans "تحویل شده" %}</option>
+      </select>
+      <button class="btn btn-primary btn-sm">{% trans "فیلتر" %}</button>
+    </form>
+  </div>
+</div>
+{% if not menu %}<div class="card"><p class="text-muted">{% trans "برای این روز منویی تعریف نشده است." %}</p></div>{% else %}
+<div class="grid-2">
+  <div class="card">
+    <h3 class="card-title mb-2">{% trans "جمع هر غذا" %}</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>{% trans "وعده" %}</th><th>{% trans "غذا" %}</th><th>{% trans "تعداد" %}</th><th>{% trans "تحویل" %}</th></tr></thead>
+      <tbody>{% for t in totals %}<tr><td>{{ t.period|default:"—" }}</td><td>{{ t.meal_item__name_fa }}</td><td><strong>{{ t.total }}</strong></td><td>{{ t.served }}</td></tr>
+      {% empty %}<tr><td colspan="3" class="text-muted" style="text-align:center;">—</td></tr>{% endfor %}</tbody>
+    </table></div>
+  </div>
+  <div class="card" style="grid-column: span 1;">
+    <h3 class="card-title mb-2">{% trans "لیست دانشجویان" %}</h3>
+    <div class="table-wrapper"><table>
+      <thead><tr><th>{% trans "کد فیش" %}</th><th>{% trans "دانشجو" %}</th><th>{% trans "شماره" %}</th><th>{% trans "غذا" %}</th><th></th></tr></thead>
+      <tbody>
+      {% for o in orders %}
+      <tr>
+        <td><code style="letter-spacing:.08em;font-weight:700;">{{ o.receipt_code }}</code></td>
+        <td>{{ o.user.display_name }}</td><td>{{ o.user.student_id|default:"—" }}</td><td>{{ o.menu.get_meal_period_display }} — {{ o.meal_item.name_fa }}</td>
+        <td>
+          <form method="post" action="{% url 'panels:cook_serve' o.pk %}">{% csrf_token %}
+            <input type="hidden" name="next" value="{{ request.get_full_path }}">
+            {% if o.is_served %}<button class="btn btn-success btn-sm" title="{% trans 'برای برگرداندن کلیک کنید' %}">✓ {% trans "تحویل شد" %}</button>
+            {% else %}<button class="btn btn-primary btn-sm">{% trans "تحویل" %}</button>{% endif %}
+          </form>
+        </td>
+      </tr>
+      {% empty %}<tr><td colspan="5" class="text-muted" style="text-align:center;">{% trans "سفارشی یافت نشد" %}</td></tr>{% endfor %}
+      </tbody></table></div>
+  </div>
+</div>
+{% endif %}
+{% endblock %}
