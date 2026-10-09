@@ -30,6 +30,8 @@ INSTALLED_APPS = [
     'tickets',
     'cafeteria',
     'wallet',
+    'panels',
+    'core',
 ]
 
 MIDDLEWARE = [
@@ -86,8 +88,13 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# اجرای سریع‌تر تست‌ها (فقط هنگام `manage.py test`)
+import sys
+if 'test' in sys.argv:
+    PASSWORD_HASHERS = ['django.contrib.auth.hashers.MD5PasswordHasher']
+
 LOGIN_URL = 'accounts:login'
-LOGIN_REDIRECT_URL = 'dashboard'
+LOGIN_REDIRECT_URL = 'dashboard'  # بر اساس نقش به پنل مناسب هدایت می‌شود
 LOGOUT_REDIRECT_URL = 'home'
 
 # ---------------------------------------------------------------------------
@@ -114,7 +121,6 @@ LOCALE_PATHS = [
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [
     BASE_DIR / 'static',
-    BASE_DIR / 'dorm-system' / 'css',  # keep original for reference
 ]
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 
@@ -143,3 +149,14 @@ MESSAGE_TAGS = {
 # ---------------------------------------------------------------------------
 SESSION_COOKIE_AGE = 60 * 60 * 24 * 7  # 1 week
 CSRF_TRUSTED_ORIGINS = []  # add domain in production
+
+
+# ---------------------------------------------------------------------------
+# PRODUCTION NOTES
+# ---------------------------------------------------------------------------
+# - Set SECRET_KEY from environment
+# - DEBUG = False
+# - ALLOWED_HOSTS = ['your.domain']
+# - DATABASES: use PostgreSQL in production
+# - SECURE_SSL_REDIRECT, SESSION_COOKIE_SECURE, CSRF_COOKIE_SECURE = True behind HTTPS
+# ---------------------------------------------------------------------------

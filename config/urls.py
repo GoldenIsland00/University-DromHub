@@ -13,12 +13,14 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path('', home_view, name='home'),
     path('dashboard/', dashboard_view, name='dashboard'),
-    path('admin-panel/', admin_dashboard, name='admin_dashboard'),
+    path('admin-panel/', admin_dashboard, name='admin_dashboard'),  # سازگاری با لینک قدیمی
+    path('panel/', include('panels.urls')),
     path('accounts/', include('accounts.urls')),
     path('dormitory/', include('dormitory.urls')),
     path('tickets/', include('tickets.urls')),
     path('cafeteria/', include('cafeteria.urls')),
     path('wallet/', include('wallet.urls')),
+    path('notifications/', include('core.urls')),
     prefix_default_language=False,
 )
 
