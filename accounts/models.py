@@ -11,9 +11,15 @@ class User(AbstractUser):
         FEMALE = 'female', _('خواهران / Sisters')
 
     class Role(models.TextChoices):
-        STUDENT = 'student', _('دانشجو / Student')
-        STAFF = 'staff', _('کارمند / Staff')
-        ADMIN = 'admin', _('مدیر / Admin')
+        STUDENT = 'student', _('دانشجو')
+        COOK = 'cook', _('آشپز')
+        MAINTENANCE = 'maintenance', _('تاسیسات')
+        GUARD = 'guard', _('گارد / حراست')
+        MANAGER = 'manager', _('مدیریت')
+        ADMIN = 'admin', _('مدیر سیستم')
+
+    # نقش‌هایی که پنل مخصوص خودشان را دارند (به‌جز دانشجو)
+    STAFF_ROLES = ('cook', 'maintenance', 'guard', 'manager', 'admin')
 
     student_id = models.CharField(
         _('شماره دانشجویی'),
@@ -59,7 +65,41 @@ class User(AbstractUser):
 
     @property
     def is_admin_user(self):
+        """مدیر سیستم (بالاترین سطح)."""
         return self.role == self.Role.ADMIN or self.is_superuser
+
+    @property
+    def is_manager_level(self):
+        """مدیریت یا مدیر سیستم: دسترسی به پنل مدیریت و مدیریت کاربران."""
+        return self.is_admin_user or self.role == self.Role.MANAGER
+
+    @property
+    def is_cook(self):
+        return self.role == self.Role.COOK
+
+    @property
+    def is_maintenance(self):
+        return self.role == self.Role.MAINTENANCE
+
+    @property
+    def is_guard(self):
+        return self.role == self.Role.GUARD
+
+    @property
+    def is_staff_member(self):
+        """هر کاربری که دانشجو نیست."""
+        return self.is_superuser or self.role in self.STAFF_ROLES
+
+    @property
+    def panel_url_name(self):
+        """نام URL داشبورد پنل مخصوص این نقش."""
+        if self.is_manager_level:
+            return 'panels:manager_dashboard'
+        return {
+            self.Role.COOK: 'panels:cook_dashboard',
+            self.Role.MAINTENANCE: 'panels:maintenance_dashboard',
+            self.Role.GUARD: 'panels:guard_dashboard',
+        }.get(self.role, 'dashboard')
 
     @property
     def display_name(self):
