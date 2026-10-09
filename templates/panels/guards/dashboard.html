@@ -1,0 +1,26 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "پنل گارد" %}{% endblock %}
+{% block heading %}🛡️ {% trans "داشبورد حراست" %}{% endblock %}
+{% block panel_content %}
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon blue">👥</div><div class="stat-content"><div class="stat-label">{% trans "کل دانشجویان" %}</div><div class="stat-value">{{ total }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon orange">🚶</div><div class="stat-content"><div class="stat-label">{% trans "بیرون از خوابگاه" %}</div><div class="stat-value">{{ outside_count }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon green">⬇️</div><div class="stat-content"><div class="stat-label">{% trans "ورود امروز" %}</div><div class="stat-value">{{ in_today }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon purple">⬆️</div><div class="stat-content"><div class="stat-label">{% trans "خروج امروز" %}</div><div class="stat-value">{{ out_today }}</div></div></div>
+</div>
+<div class="card mb-3"><a href="{% url 'panels:guard_gate' %}" class="btn btn-primary btn-lg">🚪 {% trans "ثبت ورود / خروج" %}</a></div>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "آخرین تردد‌های امروز" %}</h3><a href="{% url 'panels:guard_logs' %}" class="btn btn-ghost btn-sm">{% trans "همه" %}</a></div>
+    {% for l in recent %}<div class="roommate-item"><div style="flex:1;"><strong>{{ l.user.display_name }}</strong><div class="text-muted" style="font-size:.85rem;">{{ l.created_at|date:"H:i" }}</div></div>
+      <span class="badge badge-{% if l.direction == 'in' %}success{% else %}warning{% endif %}">{{ l.get_direction_display }}</span></div>
+    {% empty %}<p class="text-muted">{% trans "تردد ثبت نشده" %}</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "بیرون از خوابگاه" %}</h3><a href="{% url 'panels:guard_outside' %}" class="btn btn-ghost btn-sm">{% trans "همه" %}</a></div>
+    {% for s in outside %}<div class="roommate-item"><div style="flex:1;"><strong>{{ s.display_name }}</strong><div class="text-muted" style="font-size:.85rem;">{{ s.student_id }}</div></div></div>
+    {% empty %}<p class="text-muted">{% trans "همه داخل خوابگاه هستند" %}</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

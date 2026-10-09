@@ -1,1 +1,20 @@
-
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "گزارش تردد" %}{% endblock %}
+{% block heading %}📋 {% trans "گزارش تردد" %}{% endblock %}
+{% block panel_content %}
+<div class="card mb-3"><form method="get" class="flex gap-2">
+  <input type="date" class="form-control" name="date" value="{{ day|date:'Y-m-d' }}" style="width:auto;">
+  <input class="form-control" name="q" value="{{ q }}" placeholder="{% trans 'نام یا شماره دانشجویی' %}">
+  <button class="btn btn-primary btn-sm">{% trans "نمایش" %}</button>
+</form></div>
+<div class="card"><div class="table-wrapper"><table>
+  <thead><tr><th>{% trans "ساعت" %}</th><th>{% trans "دانشجو" %}</th><th>{% trans "نوع" %}</th><th>{% trans "توضیحات" %}</th><th>{% trans "ثبت‌کننده" %}</th></tr></thead>
+  <tbody>
+  {% for l in logs %}
+  <tr><td>{{ l.created_at|time:"H:i" }}</td><td>{{ l.user.display_name }} <small class="text-muted">{{ l.user.student_id }}</small></td>
+    <td><span class="badge badge-{% if l.direction == 'in' %}success{% else %}warning{% endif %}">{{ l.get_direction_display }}</span></td>
+    <td>{{ l.note|default:"—" }}</td><td>{{ l.recorded_by.display_name|default:"—" }}</td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted" style="text-align:center;">{% trans "تردد ثبت نشده" %}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

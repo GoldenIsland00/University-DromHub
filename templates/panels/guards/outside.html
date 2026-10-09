@@ -1,0 +1,18 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "افراد بیرون از خوابگاه" %}{% endblock %}
+{% block heading %}🚶 {% trans "دانشجویان بیرون از خوابگاه" %} ({{ students|length }}){% endblock %}
+{% block panel_content %}
+<div class="card"><div class="table-wrapper"><table>
+  <thead><tr><th>{% trans "دانشجو" %}</th><th>{% trans "شماره" %}</th><th>{% trans "موبایل" %}</th><th>{% trans "اتاق" %}</th><th></th></tr></thead>
+  <tbody>
+  {% for s in students %}
+  <tr><td>{{ s.display_name }}</td><td>{{ s.student_id|default:"—" }}</td><td>{{ s.phone|default:"—" }}</td>
+    <td>{% if s.bed %}{{ s.bed.room.building.name }} / {{ s.bed.room.number }}{% else %}—{% endif %}</td>
+    <td><form method="post" action="{% url 'panels:guard_record' %}">{% csrf_token %}
+      <input type="hidden" name="user_id" value="{{ s.pk }}"><input type="hidden" name="direction" value="in">
+      <input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <button class="btn btn-success btn-sm">{% trans "ثبت ورود" %}</button></form></td></tr>
+  {% empty %}<tr><td colspan="5" class="text-muted" style="text-align:center;">{% trans "همه داخل خوابگاه هستند" %}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}
