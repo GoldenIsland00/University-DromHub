@@ -12,7 +12,7 @@ SECRET_KEY = 'django-insecure-dorm-system-change-this-in-production-9f8a7b6c5d4e
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = ['https://university-dromhub-1.onrender.com', 'https://www.university-dromhub-1.onrender.com']
 
 # ---------------------------------------------------------------------------
 # Applications
