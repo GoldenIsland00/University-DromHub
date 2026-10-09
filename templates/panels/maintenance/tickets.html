@@ -1,1 +1,40 @@
-
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "تیکت‌های خرابی" %}{% endblock %}
+{% block heading %}🎫 {% trans "تیکت‌های خرابی و تعمیرات" %}{% endblock %}
+{% block panel_content %}
+<div class="card mb-3">
+  <form method="get" class="flex gap-2" style="flex-wrap:wrap;align-items:center;">
+    <select name="scope" class="form-control form-select" style="width:auto;">
+      <option value="">{% trans "تیکت‌های فعال" %}</option>
+      <option value="mine" {% if scope == 'mine' %}selected{% endif %}>{% trans "ارجاع به من" %}</option>
+      <option value="unassigned" {% if scope == 'unassigned' %}selected{% endif %}>{% trans "بدون ارجاع" %}</option>
+      <option value="all" {% if scope == 'all' %}selected{% endif %}>{% trans "همه (حتی بسته‌شده)" %}</option>
+    </select>
+    <select name="status" class="form-control form-select" style="width:auto;">
+      <option value="">{% trans "همه وضعیت‌ها" %}</option>
+      {% for v, l in statuses %}<option value="{{ v }}" {% if v == status %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+    <select name="category" class="form-control form-select" style="width:auto;">
+      <option value="">{% trans "همه دسته‌ها" %}</option>
+      {% for v, l in categories %}<option value="{{ v }}" {% if v == category %}selected{% endif %}>{{ l }}</option>{% endfor %}
+    </select>
+    <button class="btn btn-primary btn-sm">{% trans "فیلتر" %}</button>
+  </form>
+</div>
+<div class="card"><div class="table-wrapper"><table>
+  <thead><tr><th>#</th><th>{% trans "موضوع" %}</th><th>{% trans "دسته" %}</th><th>{% trans "اتاق" %}</th><th>{% trans "اولویت" %}</th><th>{% trans "وضعیت" %}</th><th>{% trans "ارجاع" %}</th><th></th></tr></thead>
+  <tbody>
+  {% for t in tickets %}
+  <tr>
+    <td>TK-{{ t.pk }}</td><td>{{ t.subject }}<br><small class="text-muted">{{ t.user.display_name }}</small></td>
+    <td>{{ t.get_category_display }}</td>
+    <td>{% if t.room %}{{ t.room.building.name }} / {{ t.room.number }}{% else %}—{% endif %}</td>
+    <td><span class="badge badge-{% if t.priority == 'urgent' %}danger{% elif t.priority == 'high' %}warning{% else %}muted{% endif %}">{{ t.get_priority_display }}</span></td>
+    <td><span class="badge badge-{% if t.status == 'open' %}warning{% elif t.status == 'in_progress' %}info{% else %}success{% endif %}">{{ t.get_status_display }}</span></td>
+    <td>{{ t.assigned_to.display_name|default:"—" }}</td>
+    <td><a href="{% url 'tickets:detail' t.pk %}" class="btn btn-primary btn-sm">{% trans "رسیدگی" %}</a></td>
+  </tr>
+  {% empty %}<tr><td colspan="8" class="text-muted" style="text-align:center;">{% trans "تیکتی وجود ندارد" %}</td></tr>{% endfor %}
+  </tbody></table></div></div>
+{% endblock %}

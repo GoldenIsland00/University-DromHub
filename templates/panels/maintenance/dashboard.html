@@ -1,0 +1,35 @@
+{% extends "panels/base_panel.html" %}
+{% load i18n %}
+{% block panel_title %}{% trans "پنل تاسیسات" %}{% endblock %}
+{% block heading %}🔧 {% trans "داشبورد تاسیسات" %}{% endblock %}
+{% block panel_content %}
+<div class="stats-grid">
+  <div class="stat-card"><div class="stat-icon orange">🆕</div><div class="stat-content"><div class="stat-label">{% trans "باز" %}</div><div class="stat-value">{{ by_status.open }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon blue">🛠️</div><div class="stat-content"><div class="stat-label">{% trans "در حال بررسی" %}</div><div class="stat-value">{{ by_status.in_progress }}</div></div></div>
+  <div class="stat-card"><div class="stat-icon green">✅</div><div class="stat-content"><div class="stat-label">{% trans "حل شده" %}</div><div class="stat-value">{{ by_status.resolved }}</div></div></div>
+</div>
+<div class="grid-2">
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">🚨 {% trans "موارد فوری" %}</h3><a href="{% url 'panels:maintenance_tickets' %}" class="btn btn-ghost btn-sm">{% trans "همه تیکت‌ها" %}</a></div>
+    {% for t in urgent %}
+    <a href="{% url 'tickets:detail' t.pk %}" class="ticket-item"><div class="ticket-status open"></div><div class="ticket-body">
+      <div class="ticket-title">{{ t.subject }}</div>
+      <div class="ticket-meta"><span>{{ t.get_category_display }}</span>{% if t.room %}<span>{% trans "اتاق" %} {{ t.room.number }}</span>{% endif %}</div></div></a>
+    {% empty %}<p class="text-muted">{% trans "مورد فوری وجود ندارد" %}</p>{% endfor %}
+  </div>
+  <div class="card">
+    <div class="card-header"><h3 class="card-title">{% trans "ارجاع‌شده به من" %}</h3><a href="{% url 'panels:maintenance_tickets' %}?scope=mine" class="btn btn-ghost btn-sm">{% trans "همه" %}</a></div>
+    {% for t in mine %}
+    <a href="{% url 'tickets:detail' t.pk %}" class="ticket-item"><div class="ticket-status {{ t.status }}"></div><div class="ticket-body">
+      <div class="ticket-title">{{ t.subject }}</div>
+      <div class="ticket-meta"><span>{{ t.get_category_display }}</span><span>{{ t.get_priority_display }}</span></div></div></a>
+    {% empty %}<p class="text-muted">{% trans "موردی به شما ارجاع نشده" %}</p>{% endfor %}
+  </div>
+</div>
+<div class="card mt-3">
+  <h3 class="card-title mb-2">{% trans "تیکت‌های باز به تفکیک دسته" %}</h3>
+  <div class="flex gap-2" style="flex-wrap:wrap;">
+    {% for label, n in by_category %}<span class="badge badge-info">{{ label }}: {{ n }}</span>{% empty %}<span class="text-muted">—</span>{% endfor %}
+  </div>
+</div>
+{% endblock %}
