@@ -10,12 +10,12 @@ class TicketReplyInline(admin.TabularInline):
 
 @admin.register(Ticket)
 class TicketAdmin(admin.ModelAdmin):
-    list_display = ('id', 'subject', 'user', 'category', 'priority', 'status', 'created_at')
+    list_display = ('id', 'subject', 'user', 'category', 'priority', 'status', 'assigned_to', 'created_at')
     list_filter = ('status', 'priority', 'category', 'created_at')
     search_fields = ('subject', 'user__username', 'user__first_name', 'description')
     list_editable = ('status', 'priority')
     inlines = [TicketReplyInline]
-    raw_id_fields = ('user', 'room')
+    raw_id_fields = ('user', 'room', 'assigned_to')
 
 
 @admin.register(TicketReply)

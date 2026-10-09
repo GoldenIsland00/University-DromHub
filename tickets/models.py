@@ -63,6 +63,14 @@ class Ticket(models.Model):
         related_name='tickets',
         verbose_name=_('اتاق')
     )
+    assigned_to = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='assigned_tickets',
+        verbose_name=_('ارجاع به')
+    )
     created_at = models.DateTimeField(_('تاریخ ایجاد'), auto_now_add=True)
     updated_at = models.DateTimeField(_('آخرین بروزرسانی'), auto_now=True)
 
