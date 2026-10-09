@@ -32,7 +32,7 @@ class Wallet(models.Model):
     def can_afford(self, amount):
         return self.balance >= amount
 
-    def deposit(self, amount, description='', performed_by=None):
+    def deposit(self, amount, description='', performed_by=None, transaction_type=None):
         amount = Decimal(amount)
         if amount <= 0:
             raise ValueError('Amount must be positive')
@@ -41,7 +41,7 @@ class Wallet(models.Model):
         Transaction.objects.create(
             wallet=self,
             amount=amount,
-            transaction_type=Transaction.Type.CHARGE,
+            transaction_type=transaction_type or Transaction.Type.CHARGE,
             description=description or 'شارژ حساب',
             performed_by=performed_by
         )
@@ -117,3 +117,33 @@ class Transaction(models.Model):
         if self.balance_after is None and self.wallet_id:
             self.balance_after = self.wallet.balance
         super().save(*args, **kwargs)
+
+
+
+class PaymentRequest(models.Model):
+    """درخواست شارژ — شبیه‌سازی درگاه پرداخت."""
+    class Status(models.TextChoices):
+        PENDING = 'pending', _('در انتظار پرداخت')
+        SUCCESS = 'success', _('موفق')
+        FAILED = 'failed', _('ناموفق')
+        CANCELLED = 'cancelled', _('لغو شده')
+
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE,
+        related_name='payment_requests', verbose_name=_('کاربر'),
+    )
+    amount = models.DecimalField(_('مبلغ'), max_digits=12, decimal_places=0,
+                                 validators=[MinValueValidator(Decimal('1000'))])
+    authority = models.CharField(_('شناسه پیگیری'), max_length=64, unique=True, db_index=True)
+    status = models.CharField(max_length=20, choices=Status.choices, default=Status.PENDING)
+    created_at = models.DateTimeField(auto_now_add=True)
+    paid_at = models.DateTimeField(null=True, blank=True)
+    gateway = models.CharField(max_length=50, default='mock', verbose_name=_('درگاه'))
+
+    class Meta:
+        verbose_name = _('درخواست پرداخت')
+        verbose_name_plural = _('درخواست‌های پرداخت')
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f'{self.user} — {self.amount} — {self.get_status_display()}'

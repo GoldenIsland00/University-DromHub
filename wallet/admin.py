@@ -34,3 +34,13 @@ class TransactionAdmin(admin.ModelAdmin):
     list_filter = ('transaction_type', 'created_at')
     search_fields = ('wallet__user__username', 'description')
     readonly_fields = ('created_at', 'balance_after')
+
+
+from .models import PaymentRequest
+
+
+@admin.register(PaymentRequest)
+class PaymentRequestAdmin(admin.ModelAdmin):
+    list_display = ('user', 'amount', 'status', 'gateway', 'created_at', 'paid_at')
+    list_filter = ('status', 'gateway')
+    search_fields = ('authority', 'user__username')
