@@ -1,4 +1,5 @@
-from datetime import date, timedelta
+from datetime import timedelta
+from django.utils import timezone
 from decimal import Decimal
 from django.core.management.base import BaseCommand
 from django.contrib.auth import get_user_model
@@ -31,6 +32,23 @@ class Command(BaseCommand):
             admin.set_password('admin1234')
             admin.save()
             self.stdout.write(self.style.SUCCESS('Admin created: admin / admin1234'))
+
+        # Staff users (هر نقش یک کاربر نمونه)
+        staff_users = [
+            ('manager', 'مریم', 'رضایی', User.Role.MANAGER, None),
+            ('cook', 'حسین', 'آشپز', User.Role.COOK, None),
+            ('maintenance', 'کاظم', 'تاسیساتی', User.Role.MAINTENANCE, None),
+            ('guard', 'محمود', 'نگهبان', User.Role.GUARD, None),
+        ]
+        for uname, first, last, role, gender in staff_users:
+            u, created = User.objects.get_or_create(
+                username=uname,
+                defaults={'first_name': first, 'last_name': last, 'email': f'{uname}@uni.ac.ir',
+                          'role': role, 'gender': gender},
+            )
+            if created:
+                u.set_password('staff1234')
+                u.save()
 
         # Buildings
         male_b, _ = Building.objects.get_or_create(name='ساختمان A', section='male', defaults={'floors': 4})
@@ -113,7 +131,7 @@ class Command(BaseCommand):
             items.append(item)
 
         # Weekly menu
-        today = date.today()
+        today = timezone.localdate()
         days_since_sat = (today.weekday() + 2) % 7
         week_start = today - timedelta(days=days_since_sat)
         for day in range(7):
@@ -127,3 +145,4 @@ class Command(BaseCommand):
         self.stdout.write(self.style.SUCCESS('Demo data seeded successfully!'))
         self.stdout.write('Students: ali / student1234 , reza / student1234 , zahra / student1234')
         self.stdout.write('Admin: admin / admin1234')
+        self.stdout.write('Staff (manager / cook / maintenance / guard): staff1234')
