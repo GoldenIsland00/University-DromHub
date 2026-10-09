@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load i18n %}
+{% block title %}{% trans "مرخصی‌ها" %}{% endblock %}
+{% block body %}
+<div class="app-layout">
+{% include "partials/sidebar.html" %}
+<div class="main-content">
+{% include "partials/topbar.html" with page_title=_("درخواست مرخصی") %}
+<div class="content-area">
+  <div class="flex-between mb-3"><h2>{% trans "درخواست‌های مرخصی من" %}</h2>
+    <a href="{% url 'dormitory:leave_create' %}" class="btn btn-primary">+ {% trans "درخواست جدید" %}</a></div>
+  <div class="card"><div class="table-wrapper"><table>
+    <thead><tr><th>{% trans "از" %}</th><th>{% trans "تا" %}</th><th>{% trans "مقصد" %}</th><th>{% trans "وضعیت" %}</th><th></th></tr></thead>
+    <tbody>
+    {% for L in leaves %}
+    <tr>
+      <td>{{ L.start_at|date:"Y/m/d H:i" }}</td>
+      <td>{{ L.end_at|date:"Y/m/d H:i" }}</td>
+      <td>{{ L.destination|default:"—" }}</td>
+      <td>{{ L.get_status_display }}</td>
+      <td>{% if L.status == 'pending' %}
+        <form method="post" action="{% url 'dormitory:leave_cancel' L.pk %}">{% csrf_token %}
+          <button class="btn btn-ghost btn-sm">{% trans "لغو" %}</button></form>{% endif %}
+      </td>
+    </tr>
+    {% empty %}<tr><td colspan="5" class="text-muted" style="text-align:center;">{% trans "درخواستی ثبت نشده" %}</td></tr>{% endfor %}
+    </tbody></table></div></div>
+</div></div></div>
+{% endblock %}
