@@ -1,0 +1,34 @@
+{% load i18n %}
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+<meta charset="utf-8">
+<title>{% trans "فیش غذا" %} — {{ order.receipt_code }}</title>
+<style>
+  body{font-family:Tahoma,sans-serif;max-width:320px;margin:20px auto;text-align:center;}
+  .code{font-size:28px;font-weight:800;letter-spacing:.15em;margin:12px 0;}
+  .qr{margin:16px auto;}
+  table{width:100%;text-align:right;font-size:14px;line-height:1.8;}
+  @media print{.no-print{display:none;}}
+</style>
+</head>
+<body>
+  <h2>{% trans "فیش سلف دانشگاه" %}</h2>
+  <div class="code">{{ order.receipt_code }}</div>
+  <div class="qr">
+    <img src="https://api.qrserver.com/v1/create-qr-code/?size=160x160&data={{ order.receipt_code }}" alt="QR" width="160" height="160">
+  </div>
+  <table>
+    <tr><td>{% trans "دانشجو" %}</td><td>{{ order.user.display_name }}</td></tr>
+    <tr><td>{% trans "وعده" %}</td><td>{{ order.menu.get_meal_period_display }}</td></tr>
+    <tr><td>{% trans "روز" %}</td><td>{{ order.menu.get_weekday_display }} {{ order.menu.date|date:"Y/m/d" }}</td></tr>
+    <tr><td>{% trans "غذا" %}</td><td>{{ order.meal_item.name_fa }}</td></tr>
+    <tr><td>{% trans "مبلغ" %}</td><td>{{ order.price_at_order|floatformat:0 }} {% trans "تومان" %}</td></tr>
+    <tr><td>{% trans "وضعیت" %}</td><td>{% if order.is_served %}{% trans "تحویل شد" %}{% else %}{% trans "در انتظار" %}{% endif %}</td></tr>
+  </table>
+  <p class="no-print" style="margin-top:20px;">
+    <button onclick="window.print()">{% trans "چاپ" %}</button>
+    <button onclick="window.close()">{% trans "بستن" %}</button>
+  </p>
+</body>
+</html>

@@ -1,49 +1,112 @@
 {% extends "base.html" %}
-{% load i18n %}
+{% load i18n cafeteria_extras %}
 {% block title %}{% trans "سفارش غذای هفتگی" %}{% endblock %}
 {% block body %}
 <div class="app-layout">
   {% include "partials/sidebar.html" %}
   <div class="main-content">
-    {% include "partials/topbar.html" %}
+    {% include "partials/topbar.html" with page_title=_("سفارش غذا") %}
     <div class="content-area">
-      <div class="flex-between mb-3">
-        <p class="text-secondary">{% trans "موجودی کیف پول" %}: <strong class="text-accent">{{ balance|floatformat:0 }} {% trans "تومان" %}</strong></p>
+      <div class="flex-between mb-3" style="flex-wrap:wrap;gap:12px;">
+        <p class="text-secondary">{% trans "موجودی کیف پول" %}: <strong class="text-accent">{{ balance|floatformat:0 }} {% trans "تومان" %}</strong>
+          · {% trans "جمع سفارش‌های این هفته" %}: <strong>{{ week_total|floatformat:0 }} {% trans "تومان" %}</strong></p>
+        <div class="flex gap-2" style="flex-wrap:wrap;">
+          <a href="{% url 'cafeteria:meals' %}" class="btn btn-sm {% if show_next %}btn-outline{% else %}btn-primary{% endif %}">{% trans "این هفته" %}</a>
+          <a href="{% url 'cafeteria:meals' %}?week=next" class="btn btn-sm {% if show_next %}btn-primary{% else %}btn-outline{% endif %}">{% trans "هفته بعد" %}</a>
+          {% for pv, pl in periods %}
+          <a href="?{% if show_next %}week=next&{% endif %}period={{ pv }}" class="btn btn-sm {% if period_filter == pv %}btn-primary{% else %}btn-outline{% endif %}">{{ pl }}</a>
+          {% endfor %}
+          <a href="{% url 'wallet:wallet' %}" class="btn btn-sm btn-ghost">{% trans "شارژ کیف پول" %}</a>
+        </div>
       </div>
-      <form method="post">
+
+      <form method="post" id="mealForm">
         {% csrf_token %}
         <div class="meal-week">
           {% for menu in menus %}
           <div class="day-card">
-            <div class="day-name">{{ menu.get_weekday_display }}</div>
-            {% with order=existing_orders|default_if_none:dict %}
-            {% if menu.pk in existing_orders %}
-              <div class="meal-option selected" style="pointer-events:none;opacity:0.9;">
-                <div class="meal-name">✓ {{ existing_orders|get_item:menu.pk }}</div>
+            <div class="day-name">{{ menu.get_weekday_display }} · {{ menu.get_meal_period_display }} <small class="text-muted">{{ menu.date|date:"m/d" }}</small></div>
+            {% if menu.order %}
+              <div class="meal-option selected" style="pointer-events:none;">
+                <div class="meal-name">✓ {{ menu.order.meal_item.name_fa }}</div>
+                <div class="meal-price">{{ menu.order.price_at_order|floatformat:0 }} ت</div>
+                {% if menu.order.is_served %}
+                  <span class="badge badge-success">{% trans "تحویل شد" %}</span>
+                {% else %}
+                  <div style="margin-top:8px;padding:8px;background:rgba(59,130,246,.12);border-radius:8px;text-align:center;">
+                    <div style="font-size:.75rem;opacity:.8;">{% trans "کد فیش" %}</div>
+                    <div style="font-size:1.35rem;font-weight:800;letter-spacing:.12em;font-family:monospace;">{{ menu.order.receipt_code }}</div>
+                    <a href="{% url 'cafeteria:receipt' menu.order.pk %}" target="_blank" class="btn btn-ghost btn-sm" style="margin-top:4px;">🖨️ {% trans "چاپ فیش / QR" %}</a>
+                  </div>
+                {% endif %}
               </div>
+              {% if menu.can_cancel and not menu.order.is_served %}
+              <button type="submit" form="cancel-{{ menu.order.pk }}" class="btn btn-ghost btn-sm mt-1"
+                      onclick="return confirm('{% trans "سفارش لغو و مبلغ برگردانده شود؟" %}')">{% trans "لغو سفارش" %}</button>
+              {% endif %}
+            {% elif menu.is_past %}
+              <p class="text-muted">{% trans "زمان سفارش این روز گذشته است" %}</p>
             {% else %}
-              {% for item in menu.options.all %}
+              {% for item in menu.items %}
               <label class="meal-option" style="display:block;cursor:pointer;">
-                <input type="radio" name="menu_{{ menu.pk }}" value="{{ item.pk }}" style="display:none;"
-                  onchange="this.closest('.day-card').querySelectorAll('.meal-option').forEach(e=>e.classList.remove('selected'));this.closest('.meal-option').classList.add('selected');">
+                <input type="radio" name="menu_{{ menu.pk }}" value="{{ item.pk }}" data-price="{{ item.price|floatformat:0 }}" style="display:none;"
+                  onchange="this.closest('.day-card').querySelectorAll('.meal-option').forEach(e=>e.classList.remove('selected'));this.closest('.meal-option').classList.add('selected');updateTotal();">
                 <div class="meal-name">{{ item.name_fa }}</div>
                 <div class="meal-price">{{ item.price|floatformat:0 }} ت</div>
               </label>
+              {% empty %}
+              <p class="text-muted">{% trans "غذایی برای این روز تعریف نشده" %}</p>
               {% endfor %}
             {% endif %}
-            {% endwith %}
           </div>
           {% empty %}
-          <p class="text-muted">{% trans "منوی این هفته هنوز تعریف نشده است. از پنل ادمین اضافه کنید." %}</p>
+          <p class="text-muted">{% trans "منوی این هفته هنوز تعریف نشده است. آشپز یا مدیریت باید منو را ثبت کنند." %}</p>
           {% endfor %}
         </div>
         {% if menus %}
-        <div class="card mt-3">
-          <button type="submit" class="btn btn-primary btn-lg">{% trans "ثبت سفارش هفته" %}</button>
+        <div class="card mt-3 flex-between" style="flex-wrap:wrap;gap:12px;">
+          <div>{% trans "مبلغ سفارش جدید" %}: <strong id="newTotal">0</strong> {% trans "تومان" %}</div>
+          <button type="submit" class="btn btn-primary btn-lg">{% trans "ثبت سفارش" %}</button>
         </div>
         {% endif %}
       </form>
+
+      {# فرم‌های لغو سفارش (بیرون از فرم اصلی چون فرم تودرتو در HTML مجاز نیست) #}
+      {% for menu in menus %}{% if menu.order and menu.can_cancel and not menu.order.is_served %}
+      <form method="post" id="cancel-{{ menu.order.pk }}" action="{% url 'cafeteria:cancel' menu.order.pk %}">{% csrf_token %}</form>
+      {% endif %}{% endfor %}
+
+      <div class="card mt-3">
+        <div class="card-header"><h3 class="card-title">{% trans "تاریخچه سفارش‌ها" %}</h3></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr><th>{% trans "روز" %}</th><th>{% trans "غذا" %}</th><th>{% trans "کد فیش" %}</th><th>{% trans "مبلغ" %}</th><th>{% trans "وضعیت" %}</th></tr></thead>
+            <tbody>
+              {% for o in history %}
+              <tr>
+                <td>{{ o.menu.get_weekday_display }} · {{ o.menu.get_meal_period_display }} {{ o.menu.date|date:"Y/m/d" }}</td>
+                <td>{{ o.meal_item.name_fa }}</td>
+                <td><code style="letter-spacing:.08em;">{{ o.receipt_code }}</code></td>
+                <td>{{ o.price_at_order|floatformat:0 }}</td>
+                <td>{% if o.is_served %}<span class="badge badge-success">{% trans "تحویل شد" %}</span>{% else %}<span class="badge badge-warning">{% trans "در انتظار" %}</span>{% endif %}</td>
+              </tr>
+              {% empty %}
+              <tr><td colspan="4" class="text-muted" style="text-align:center;">{% trans "هنوز سفارشی ثبت نکرده‌اید" %}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   </div>
 </div>
+{% endblock %}
+{% block extra_js %}
+<script>
+function updateTotal(){
+  let t = 0;
+  document.querySelectorAll('#mealForm input[type=radio]:checked').forEach(r => t += parseInt(r.dataset.price || 0));
+  document.getElementById('newTotal').textContent = t.toLocaleString();
+}
+</script>
 {% endblock %}
